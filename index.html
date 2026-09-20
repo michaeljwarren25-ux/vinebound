@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Vinebound</title>
+  <meta name="description" content="Card duels in a forgotten jungle. A new board every day. Challenge your friends.">
+  <meta property="og:title" content="Vinebound">
+  <meta property="og:description" content="Card duels in a forgotten jungle. Can you beat my score?">
+  <meta name="theme-color" content="#070a07">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' fill='%237fb069'>❦</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&display=swap">
+  <link rel="stylesheet" href="src/styles.css">
+</head>
+<body data-screen="home">
+  <main id="app">
+    <section id="home" class="screen">
+      <button class="icon-btn sound-toggle home-sound" type="button" data-sound-toggle aria-label="Sound">♪</button>
+      <div class="purse" title="Amber"><span class="amber-drop"></span> <span id="home-balance">0</span></div>
+      <div class="logo" aria-hidden="true">❦&#xFE0E;</div>
+      <h1>Vinebound</h1>
+      <p class="tagline">Card duels in a forgotten jungle</p>
+
+      <div id="challenge-banner" class="banner" hidden>
+        <p id="challenge-text"></p>
+        <button id="challenge-btn" class="btn primary" type="button">Accept challenge</button>
+      </div>
+
+      <button id="daily-btn" class="btn primary" type="button">Daily Duel <span id="daily-num"></span></button>
+      <p id="daily-status" class="muted"></p>
+      <p id="streak-status" class="streak"></p>
+
+      <button id="trail-btn" class="btn" type="button">Jungle Trail <span id="trail-count" class="count"></span></button>
+
+      <button id="quick-btn" class="btn" type="button">Quick Match</button>
+      <div class="difficulty" role="radiogroup" aria-label="Quick match difficulty">
+        <button type="button" role="radio" data-level="easy">Easy</button>
+        <button type="button" role="radio" data-level="normal">Normal</button>
+        <button type="button" role="radio" data-level="hard">Hard</button>
+      </div>
+      <p id="deck-warning" class="warning" hidden>Your deck needs 14 cards. Open your collection to finish it.</p>
+
+      <button id="collection-btn" class="btn" type="button">Collection &amp; Deck <span id="collection-count" class="count"></span></button>
+      <button id="trophies-btn" class="btn" type="button">Trophies <span id="trophies-count" class="count"></span></button>
+      <button id="howto-btn" class="link" type="button">How to play</button>
+    </section>
+
+    <section id="game" class="screen" hidden>
+      <header class="hud">
+        <button id="quit-btn" class="icon-btn" type="button" aria-label="Back to menu">←</button>
+        <button class="icon-btn sound-toggle" type="button" data-sound-toggle aria-label="Sound">♪</button>
+        <div id="mode-label"></div>
+        <div class="scoreboard" aria-live="polite">
+          <span class="score p" id="score-p">0</span><span class="dash">–</span><span class="score o" id="score-o">0</span>
+        </div>
+      </header>
+      <p id="twist-bar" class="twist-bar" hidden></p>
+      <div class="hand-row foe-row">
+        <div id="foe-rite" class="rite-token foe" role="img"></div>
+        <div class="hand opponent" id="hand-o" aria-label="Opponent's hand"></div>
+      </div>
+      <div class="board-wrap">
+        <div class="board" id="board"></div>
+        <div id="board-fx" class="board-fx" aria-hidden="true"></div>
+        <div id="strike-fx" class="strike-fx" aria-hidden="true"></div>
+        <div id="draw-pile" class="draw-pile" aria-hidden="true"></div>
+      </div>
+      <button id="status" class="status" type="button" disabled></button>
+      <div class="hand-row">
+        <div class="rite-holder">
+          <button id="rite-btn" class="rite-token" type="button" aria-haspopup="dialog"></button>
+          <div id="rite-panel" class="rite-panel" hidden role="dialog" aria-label="Your Rite"></div>
+        </div>
+        <div class="hand player" id="hand-p" aria-label="Your hand"></div>
+      </div>
+    </section>
+
+    <section id="collection" class="screen" hidden>
+      <header class="hud">
+        <button id="collection-back" class="icon-btn" type="button" aria-label="Back to menu">←</button>
+        <h2 class="screen-title">Collection</h2>
+        <div class="purse small" title="Amber"><span class="amber-drop"></span> <span id="collection-balance">0</span></div>
+      </header>
+
+      <div class="filters deck-modes" role="group" aria-label="Which deck to edit">
+        <button type="button" data-deck-mode="duel">Duel deck</button>
+        <button type="button" data-deck-mode="campaign">Campaign deck</button>
+      </div>
+
+      <section class="deck-panel" aria-labelledby="deck-heading">
+        <div class="deck-head">
+          <h3 id="deck-heading"><span id="deck-title">Duel deck</span> <span id="deck-count" class="deck-count"></span></h3>
+          <p id="deck-hint" class="muted"></p>
+        </div>
+        <div id="deck-strip" class="deck-strip"></div>
+    <div class="rite-slot">
+      <p class="rite-slot-head"><span class="rite-tag">Rite</span> <span id="rite-slot-hint" class="muted"></span></p>
+      <div id="rite-list" class="rite-list"></div>
+    </div>
+      </section>
+
+      <button id="packs-btn" class="btn packs-link" type="button">Card Packs <span id="packs-count" class="count"></span></button>
+
+      <div class="filters" role="group" aria-label="Filter cards">
+        <button type="button" data-filter="all">All</button>
+        <button type="button" data-filter="owned">Owned</button>
+        <button type="button" data-filter="locked">Locked</button>
+      </div>
+      <div class="filters colors" role="group" aria-label="Filter by color">
+        <button type="button" data-color="all">Any color</button>
+        <button type="button" data-color="green"><span class="kin-dot color-green"></span> Green</button>
+        <button type="button" data-color="red"><span class="kin-dot color-red"></span> Red</button>
+        <button type="button" data-color="blue"><span class="kin-dot color-blue"></span> Blue</button>
+      </div>
+      <div id="card-grid" class="card-grid"></div>
+    </section>
+
+    <section id="packs" class="screen" hidden>
+      <header class="hud">
+        <button id="packs-back" class="icon-btn" type="button" aria-label="Back">←</button>
+        <h2 id="packs-title" class="screen-title">Choose your pack</h2>
+        <div class="purse small" title="Amber"><span class="amber-drop"></span> <span id="packs-balance">0</span></div>
+      </header>
+      <p id="packs-intro" class="trail-intro"></p>
+      <div id="pack-list" class="pack-list"></div>
+      <div id="packs-footer" class="packs-footer" hidden>
+        <button id="pack-confirm" class="btn primary" type="button" disabled>Pick a pack</button>
+      </div>
+    </section>
+
+    <section id="trail" class="screen" hidden>
+      <header class="hud">
+        <button id="trail-back" class="icon-btn" type="button" aria-label="Back to menu">←</button>
+        <h2 class="screen-title">Jungle Trail</h2>
+        <div class="purse small" title="Amber"><span class="amber-drop"></span> <span id="trail-balance">0</span></div>
+      </header>
+      <p id="trail-hint" class="trail-intro"></p>
+      <section class="deck-panel campaign-panel" aria-labelledby="campaign-heading">
+        <div class="deck-head">
+          <h3 id="campaign-heading">Campaign deck <span id="campaign-count" class="deck-count"></span></h3>
+          <p id="campaign-hint" class="muted"></p>
+        </div>
+        <div id="campaign-strip" class="deck-strip"></div>
+        <button id="campaign-edit" class="btn small" type="button">Build deck &amp; upgrade cards</button>
+      </section>
+      <ol id="trail-list" class="trail-list"></ol>
+    </section>
+  </main>
+
+  <dialog id="result-dialog">
+    <button class="icon-btn close-btn" type="button" data-close aria-label="Close">✕</button>
+    <h2 id="result-title" class="result-title"></h2>
+    <p id="result-score" class="result-score"></p>
+    <pre id="result-grid" class="result-grid"></pre>
+    <p id="result-challenge" class="muted" hidden></p>
+    <div id="result-rewards" class="rewards" hidden></div>
+    <label class="name-field">Your name (shown in challenge links)
+      <input id="name-input" maxlength="20" autocomplete="nickname" placeholder="Optional">
+    </label>
+    <div class="actions">
+      <button id="share-btn" class="btn primary" type="button">Share &amp; challenge</button>
+      <button id="image-btn" class="btn" type="button">Save image</button>
+      <button id="rematch-btn" class="btn" type="button">New match</button>
+      <button id="home-btn" class="btn ghost" type="button">Menu</button>
+    </div>
+  </dialog>
+
+  <dialog id="card-dialog" class="card-dialog">
+    <button class="icon-btn close-btn" type="button" data-close aria-label="Close">✕</button>
+    <div id="card-dialog-card" class="card-dialog-card"></div>
+    <p id="card-dialog-rarity" class="rarity-label"></p>
+    <h2 id="card-dialog-name" class="card-dialog-name"></h2>
+    <div id="card-dialog-ability"></div>
+    <div id="card-dialog-upgrade" class="upgrade" hidden></div>
+    <p id="card-dialog-flavor" class="flavor"></p>
+    <div class="actions"><button id="card-dialog-action" class="btn" type="button"></button></div>
+  </dialog>
+
+  <dialog id="howto-dialog" class="howto">
+    <button class="icon-btn close-btn" type="button" data-close aria-label="Close">✕</button>
+    <h2>How to play</h2>
+    <ol>
+      <li>Each side brings <b>8 cards</b>. You hold <b>3</b> at a time and draw a new one each time you play. Your opponent's hand stays hidden, and a coin toss decides who goes first.</li>
+      <li>Take turns placing a card on the 5×5 board. Stone squares are blocked.</li>
+      <li>Every card has an <b>Attack</b> number, a <b>Defense</b> number, and <b>arrows</b> (from 1 to 8, corners included) showing where it attacks. When your card points at an enemy card, and that card points back, it's a battle: your Attack against its Defense. Higher wins; a tie holds. If it doesn't point back, you take it for free.</li>
+      <li>Every card you capture attacks again along its own arrows, so one play can set off a chain. The whole chain is settled with the numbers showing when your card landed, so what you see is what fights.</li>
+      <li>Watch the attack itself: claws rake out of your card along the arrow they use. An attack that gets through bursts and turns the card over; one that fails breaks on the shield the defender puts up.</li>
+      <li><b>☀&#xFE0E; Sunlit</b> squares give +1 to Attack and Defense. <b>❦&#xFE0E; Undergrowth</b> squares give −1. <b>A</b> = 10.</li>
+      <li>Every card is <b>Green</b>, <b>Red</b> or <b>Blue</b>. A colored line on one side of its frame means it wants a card of that color there; a dashed line all around means anywhere next to it. On the board, a card's <em>attack arrows</em> are colored to show who holds it: green arrows are yours, red arrows are your opponent's. The frame keeps the card's own color, so a card looks the same on the board as it does in your hand.</li>
+      <li>When it gets that color, the card has <b>Advantage</b> and its ability works: stronger numbers, weaker enemies, boosts for corners, edges, or the center. <b>Any</b> card of that color counts — yours or your opponent's. Ownership never matters, only the color.</li>
+      <li>Hover a card (or press and hold on a phone) to read its ability. After you pick a card, squares where it would get Advantage are marked, and hovering a square shows what you'd capture there.</li>
+      <li>When every card has been played, whoever holds more cards wins. Equal is a draw.</li>
+      <li>Build a <b>14-card deck</b> in your Collection. Each Quick Match deals you 8 of them. You start with a themed <b>pack</b>, and the other packs are on sale in the Collection.</li>
+      <li>Every deck carries one <b>Rite</b>: a power you may use <b>once a match</b>, on your turn, free — it doesn't cost you the card you play that turn. Your opponent brings one too, and you can see which. Rites stow a card you can't use, raise your numbers, or reshape the board: open a square to the sun, bury one under stone, clear the stone off another, or pull one of your own cards back off the board. Three come with your starter pack; the rest are unlocked with amber, and each does something the others don't. Equip one to each deck in the Collection.</li>
+      <li>Win to earn <b>amber</b> and trade it for new cards. Play the Daily Duel several days in a row for rare card rewards.</li>
+      <li>Walk the <b>Jungle Trail</b> for tougher opponents who bend the rules, and earn <b>Trophies</b> along the way.</li>
+      <li>The Trail uses its own <b>campaign deck</b>. Campaign cards start weaker, earn XP every time you win there, and gain a point each level: spend it to raise Attack or Defense by 1. Quick Match, the Daily Duel and challenges always use fixed numbers.</li>
+    </ol>
+    <div class="actions"><button class="btn primary" type="button" data-close>Got it</button></div>
+  </dialog>
+
+  <dialog id="trophies-dialog" class="trophies">
+    <button class="icon-btn close-btn" type="button" data-close aria-label="Close">✕</button>
+    <h2>Trophies</h2>
+    <p id="trophy-summary" class="muted"></p>
+    <ul id="trophy-list" class="trophy-list"></ul>
+    <div class="actions"><button class="btn primary" type="button" data-close>Close</button></div>
+  </dialog>
+
+  <dialog id="unlock-dialog" class="unlock" aria-labelledby="unlock-name">
+    <div class="unlock-rays" aria-hidden="true"></div>
+    <p id="unlock-eyebrow" class="unlock-eyebrow"></p>
+    <div class="unlock-stage" aria-hidden="true">
+      <div class="unlock-flip">
+        <div class="unlock-back"></div>
+        <div id="unlock-front" class="unlock-front"></div>
+      </div>
+    </div>
+    <p id="unlock-rarity" class="unlock-rarity unlock-text"></p>
+    <h2 id="unlock-name" class="unlock-name unlock-text"></h2>
+    <div id="unlock-ability" class="unlock-text"></div>
+    <p id="unlock-source" class="unlock-source unlock-text"></p>
+    <div class="actions">
+      <button id="unlock-next" class="btn primary" type="button">Continue</button>
+      <button id="unlock-deck" class="btn" type="button" hidden>Add to deck</button>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" hidden></div>
+
+  <div id="coin-overlay" class="coin-overlay" hidden>
+    <p class="coin-title">Who plays first?</p>
+    <div id="coin-stage" class="coin-stage">
+      <div id="coin" class="coin" aria-hidden="true">
+        <div class="coin-face you"><span class="glyph">❦&#xFE0E;</span><span>You</span></div>
+        <div class="coin-face rival"><span class="glyph">☠&#xFE0E;</span><span>Rival</span></div>
+      </div>
+    </div>
+    <p id="coin-result" class="coin-result" aria-live="polite"></p>
+  </div>
+
+  <aside id="card-preview" class="card-preview" aria-hidden="true" hidden></aside>
+  <div id="load-error" class="load-error" hidden></div>
+  <script type="module" src="src/main.js"></script>
+  <script>
+    // Classic script: runs even when module scripts are blocked, so failures aren't silent.
+    (function () {
+      var box = document.getElementById('load-error');
+      function show(html) { box.innerHTML = html; box.hidden = false; }
+      if (location.protocol === 'file:') {
+        show('<b>Vinebound can\'t run from a double-clicked file.</b><br>' +
+          'Open a terminal in the project folder, run <code>npm start</code>, then visit ' +
+          '<a href="http://localhost:5173">http://localhost:5173</a>.');
+        return;
+      }
+      window.addEventListener('error', function (e) {
+        show('<b>Something broke while loading.</b><br>' + String(e.message || 'Unknown error'));
+      });
+      setTimeout(function () {
+        if (!window.__vineboundReady) show('<b>The game script didn\'t start.</b><br>Try a hard refresh (Ctrl+Shift+R).');
+      }, 4000);
+    })();
+  </script>
+</body>
+</html>

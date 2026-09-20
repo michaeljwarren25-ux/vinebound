@@ -1,0 +1,2109 @@
+/* Vinebound: dark jungle. Carved stone, moss, jade, and weathered wood. Nothing shiny. */
+
+:root {
+  --bg: #070a07;
+  --bg-2: #0d130d;
+  --panel: #121a13;
+  --panel-hover: #18231a;
+  --line: #273527;
+  --text: #dfe5d2;
+  --muted: #8d9c86;
+  --moss: #7fb069;
+  --moss-dark: #2f5232;
+  --amber: #d4923a;
+  --jade: #5cb87f;
+  --clay: #cf5f42;
+  /* Card colors: moss, dried blood, river slate. */
+  --green: #6e9b4e;
+  --red: #b4553a;
+  --blue: #4f82a8;
+  --font-display: "IM Fell English SC", "IM Fell English", Georgia, "Times New Roman", serif;
+  --font-numbers: Georgia, "Times New Roman", serif;
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .75 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+
+  /* Phone sizes for the 5×5 board (5.42 cells wide and 6.67 tall, with gaps and padding).
+     The desktop layout further down makes it bigger. */
+  --cell: min(17vw, 112px, calc((100vh - 344px) / 6.67));
+  --hand-card: min(17vw, 84px);
+  color-scheme: dark;
+}
+
+@supports (height: 100dvh) {
+  :root { --cell: min(17vw, 112px, calc((100dvh - 344px) / 6.67)); }
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; min-height: 100%; }
+
+body {
+  font-family: Georgia, "Times New Roman", serif;
+  color: var(--text);
+  background:
+    /* canopy shadows creeping in from the corners */
+    radial-gradient(ellipse 45% 35% at 0% 0%, rgba(0, 0, 0, 0.75), transparent 70%),
+    radial-gradient(ellipse 45% 35% at 100% 0%, rgba(0, 0, 0, 0.75), transparent 70%),
+    radial-gradient(ellipse 70% 40% at 50% 0%, rgba(127, 176, 105, 0.1), transparent 70%),
+    radial-gradient(ellipse 80% 45% at 50% 110%, rgba(40, 70, 35, 0.35), transparent 70%),
+    url("../art/field/table.webp") center / cover no-repeat,
+    var(--bg);
+  background-attachment: fixed;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#app {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 16px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.screen { flex: 1; display: flex; flex-direction: column; }
+.screen[hidden] { display: none !important; } /* beats the desktop `#game { display: grid }` */
+
+h1, h2, h3, .btn, .screen-title, #mode-label, .result-title, .rarity-label, .tile-rarity, .filters button, .difficulty button {
+  font-family: var(--font-display);
+  font-weight: 400;
+}
+
+/* ---------- Shared controls ---------- */
+
+.btn {
+  font: inherit;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  letter-spacing: 0.03em;
+  width: 100%;
+  max-width: 320px;
+  padding: 12px 20px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--grain), linear-gradient(180deg, #1a2319, #111811);
+  background-blend-mode: soft-light, normal;
+  color: var(--text);
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 2px 0 rgba(0, 0, 0, 0.6);
+  transition: transform 0.12s, border-color 0.2s, background-color 0.2s;
+}
+.btn:hover:not(:disabled) { border-color: #3f553d; }
+.btn:active:not(:disabled) { transform: translateY(1px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn.primary {
+  border-color: #5f8a55;
+  background: var(--grain), linear-gradient(180deg, #3e6a40, var(--moss-dark));
+  background-blend-mode: soft-light, normal;
+  color: #eef3e3;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.6);
+}
+.btn.primary:hover:not(:disabled) { border-color: var(--moss); }
+.btn.ghost { background: transparent; box-shadow: none; }
+.btn.small { max-width: none; padding: 6px 4px; font-size: 0.8rem; letter-spacing: 0; }
+
+.icon-btn {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--panel);
+  color: var(--text);
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.muted { margin: 0; color: var(--muted); font-size: 0.9rem; }
+
+.link {
+  margin-top: 6px;
+  border: none;
+  background: none;
+  color: var(--moss);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* A drop of amber resin, drawn in CSS. */
+.amber-drop {
+  display: inline-block;
+  width: 0.7em;
+  height: 0.7em;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  background: radial-gradient(circle at 35% 35%, #f3c77a, var(--amber) 45%, #7a4312);
+  box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.5);
+  vertical-align: 0.05em;
+}
+
+.purse {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--bg-2);
+  color: var(--text);
+  font-family: var(--font-numbers);
+}
+.purse.small { padding: 4px 10px; font-size: 0.9rem; }
+
+.hud { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+
+/* ---------- Home ---------- */
+
+#home { align-items: center; justify-content: center; text-align: center; gap: 12px; }
+#home .purse { position: absolute; top: 16px; right: max(16px, calc(50% - 264px)); }
+
+.logo {
+  font-family: "Segoe UI Symbol", "Noto Sans Symbols 2", serif;
+  font-size: 76px;
+  line-height: 1;
+  color: var(--moss);
+  text-shadow: 0 3px 0 #0b120b, 0 0 24px rgba(127, 176, 105, 0.25);
+  animation: sway 6s ease-in-out infinite;
+  transform-origin: 50% 0%;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(2.6rem, 12vw, 3.6rem);
+  letter-spacing: 0.04em;
+  color: #cdd6bb;
+  text-shadow: 0 3px 0 #0a0f0a, 0 0 30px rgba(127, 176, 105, 0.15);
+}
+
+.tagline { margin: 0 0 10px; color: var(--muted); font-style: italic; }
+.streak { margin: -4px 0 6px; font-size: 0.85rem; color: #d9a15c; }
+.warning { margin: 0; font-size: 0.85rem; color: #e08a70; max-width: 320px; }
+.count { margin-left: 6px; color: var(--muted); font-size: 0.85em; }
+
+.difficulty {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--bg-2);
+}
+.difficulty button {
+  font-size: 0.95rem;
+  padding: 5px 14px;
+  border: none;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+.difficulty button[aria-checked="true"] { background: var(--panel-hover); color: var(--text); box-shadow: inset 0 0 0 1px #3f553d; }
+
+.banner {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+  max-width: 320px;
+  padding: 14px;
+  border: 1px solid #3f553d;
+  border-radius: 4px;
+  background: rgba(92, 184, 127, 0.08);
+}
+.banner[hidden] { display: none; }
+.banner p { margin: 0; }
+.banner .btn { max-width: none; }
+
+/* ---------- Game ---------- */
+
+#game { gap: 10px; }
+
+#mode-label { flex: 1; text-align: center; font-size: 1rem; color: var(--muted); }
+
+.scoreboard { display: flex; align-items: center; gap: 6px; font-family: var(--font-numbers); font-size: 1.5rem; font-weight: 700; }
+.score.p { color: var(--jade); }
+.score.o { color: var(--clay); }
+.dash { color: var(--muted); }
+
+.hand {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  min-height: calc(var(--hand-card) * 1.25);
+}
+.hand.opponent,
+.hand-row.foe-row { --hand-card: min(13vw, 62px); }
+
+.hand-slot {
+  width: var(--hand-card);
+  flex: none;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  transition: transform 0.15s;
+}
+button.hand-slot { cursor: pointer; }
+button.hand-slot:disabled { cursor: default; filter: brightness(0.7); }
+button.hand-slot:not(:disabled):hover { transform: translateY(-4px); }
+.hand-slot[aria-pressed="true"] { transform: translateY(-12px) !important; }
+.hand-slot[aria-pressed="true"] .card { box-shadow: 0 0 0 2px var(--moss), 0 10px 24px rgba(0, 0, 0, 0.7); }
+
+.status {
+  min-height: 1.6em;
+  border: none;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  text-align: center;
+}
+.status:not(:disabled) { color: var(--moss); text-decoration: underline; cursor: pointer; }
+
+/* The board is a carved stone slab, overgrown at the edges. */
+.board {
+  display: grid;
+  grid-template-columns: repeat(5, var(--cell));
+  gap: calc(var(--cell) * 0.06);
+  justify-content: center;
+  margin: 0 auto;
+  padding: calc(var(--cell) * 0.09);
+  border: 1px solid #2e3a2b;
+  border-radius: 6px;
+  /* The carved slab painting, dimmed a little so cards and empty squares read clearly. */
+  background:
+    linear-gradient(rgba(8, 10, 7, 0.32), rgba(8, 10, 7, 0.32)),
+    url("../art/field/board.webp") center / cover no-repeat,
+    #161a14;
+  box-shadow:
+    0 30px 70px rgba(0, 0, 0, 0.7),
+    inset 0 0 0 calc(var(--cell) * 0.035) #1b2119,
+    inset 0 0 0 calc(var(--cell) * 0.045) #333a2e,
+    inset 0 0 60px rgba(0, 0, 0, 0.6);
+}
+
+/* A playable square is a socket cut down into the slab: sunk, shadowed from above, with a lit
+   lower lip. Blocked squares are the exact opposite (see .cell.blocked), which is what tells
+   the two apart at a glance rather than the stone texture, which is much of a muchness. */
+.cell {
+  position: relative;
+  container-type: inline-size; /* so a tile badge can tell whether its name will fit */
+  aspect-ratio: 4 / 5;
+  padding: 0;
+  border: 1px solid rgba(150, 175, 130, 0.16);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.42);
+  box-shadow:
+    inset 0 calc(var(--cell) * 0.055) calc(var(--cell) * 0.1) rgba(0, 0, 0, 0.85),
+    inset 0 calc(var(--cell) * 0.012) 0 rgba(0, 0, 0, 0.9),
+    inset 0 calc(var(--cell) * -0.022) 0 rgba(190, 205, 170, 0.11),
+    0 1px 0 rgba(255, 255, 255, 0.05);
+  color: inherit;
+  font: inherit;
+  perspective: 800px;
+}
+/* A shaft of sunlight through a gap in the canopy. */
+.cell.sunlit {
+  border-color: rgba(220, 190, 110, 0.35);
+  background:
+    linear-gradient(165deg, rgba(240, 210, 130, 0.28), rgba(240, 210, 130, 0.05) 55%, transparent 80%),
+    rgba(0, 0, 0, 0.2);
+}
+.cell.shade {
+  border-color: rgba(60, 90, 50, 0.4);
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 100%, rgba(30, 60, 25, 0.8), transparent 70%),
+    radial-gradient(ellipse 50% 35% at 90% 90%, rgba(25, 50, 20, 0.7), transparent 70%),
+    rgba(0, 0, 0, 0.55);
+}
+
+.tile-badge {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 2px;
+  padding: 4px;
+  font-family: var(--font-display);
+  font-size: clamp(0.7rem, calc(var(--cell) * 0.09), 1.05rem);
+  line-height: 1.1;
+  text-align: center;
+  color: var(--muted);
+  pointer-events: none;
+}
+.tile-badge .glyph { font-family: "Segoe UI Symbol", "Noto Sans Symbols 2", serif; font-size: calc(var(--cell) * 0.22); }
+.tile-amount { font-family: var(--font-numbers); }
+/* "Undergrowth" is wider than a small square, and two of them side by side ran into each other. */
+@container (max-width: 86px) {
+  .tile-name { display: none; }
+}
+.cell.sunlit .tile-badge { color: #e0c483; }
+.cell.shade .tile-badge { color: #7e9a70; }
+
+.board.selecting .cell.empty {
+  border-color: rgba(127, 176, 105, 0.45);
+  cursor: pointer;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+.board.selecting .cell.empty:hover { background-color: rgba(127, 176, 105, 0.14); }
+
+/* ---------- Cards ---------- */
+
+.card {
+  --rim: #7a5c3e;
+  --rim-2: #33251a;
+  --glow: transparent;
+  --stone: #8a8672;
+  --stone-2: #35332a;
+  --tint: transparent;
+  --tone-light: rgba(170, 165, 140, 0.35);
+  --tone-dark: #151511;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border-radius: 5px;
+  background: #080a08;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.65), 0 0 18px var(--glow);
+  container-type: inline-size;
+}
+.cell .card { position: absolute; inset: 0; }
+
+/* Carved frame, drawn as a gradient ring over the art. */
+.card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  padding: 3px;
+  padding: max(3px, 6cqw);
+  border-radius: inherit;
+  background: var(--grain), linear-gradient(160deg, var(--rim), var(--rim-2) 40%, var(--rim) 65%, var(--rim-2));
+  background-blend-mode: overlay, normal;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* The card's color themes the whole card: the carved frame and the scene behind the art. */
+.color-green { --kin: var(--green); --rim: #7da65c; --rim-2: #1c3116; --tone-light: rgba(110, 175, 80, 0.55); --tone-dark: #0c1c0b; }
+.color-red { --kin: var(--red); --rim: #c26a4c; --rim-2: #3a130a; --tone-light: rgba(210, 85, 50, 0.55); --tone-dark: #220a06; }
+.color-blue { --kin: var(--blue); --rim: #6194b8; --rim-2: #10233a; --tone-light: rgba(70, 135, 195, 0.55); --tone-dark: #07121f; }
+
+/* Ownership is carried by the ATTACK ARROWS — green are yours, red are your opponent's (see
+   .arrow below). That leaves the card's frame free to keep showing its own Green, Red or Blue,
+   so a card looks the same on the board as in your hand: the only way to tell what color an
+   enemy card is, and Advantage is decided by color alone. */
+.cell .card::after { padding: max(4px, 7.5cqw); }
+.cell .card.advantaged::before { inset: max(6px, 9cqw); }
+
+.card-art {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background:
+    /* leaf silhouettes framing the scene */
+    radial-gradient(ellipse 42% 24% at 8% 102%, #030603 62%, transparent 65%),
+    radial-gradient(ellipse 38% 20% at 92% 104%, #040804 62%, transparent 65%),
+    radial-gradient(ellipse 26% 42% at -4% 28%, rgba(3, 7, 3, 0.9) 58%, transparent 61%),
+    radial-gradient(ellipse 24% 40% at 104% 22%, rgba(3, 7, 3, 0.9) 58%, transparent 61%),
+    radial-gradient(ellipse at 50% 40%, var(--tone-light), transparent 62%),
+    linear-gradient(180deg, var(--tone-dark), #040504);
+}
+/* Grain so flat gradients read as painted texture. */
+.card-art::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--grain);
+  opacity: 0.6;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+/* Owner tint and vignette sit over the art (placeholder or painted). */
+.card-art::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--tint);
+  box-shadow: inset 0 0 22cqw rgba(0, 0, 0, 0.85);
+  pointer-events: none;
+}
+.card-art img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Placeholder sigil, carved in pale stone. */
+.sigil {
+  position: relative;
+  font-family: "Segoe UI Symbol", "Segoe UI Historic", "Noto Sans Symbols 2", "Noto Sans Symbols", "Noto Sans Runic", serif;
+  font-size: 30px;
+  font-size: 44cqw;
+  line-height: 1;
+  color: transparent;
+  background: linear-gradient(180deg, #e9e6cf, #a19b7c 55%, #45412f);
+  -webkit-background-clip: text;
+  background-clip: text;
+  filter: drop-shadow(0 0 6cqw var(--tone-light)) drop-shadow(0 2px 1px rgba(0, 0, 0, 0.95));
+  transform: translateY(-3%);
+}
+
+/* Attack arrows: wedges on the frame, pointing the ways the card attacks. Their color is who
+   owns the card — green yours, red your opponent's — which is the one signal on the board that
+   says whose card this is. Away from the board (the Collection, packs) they stay bone. */
+.arrow {
+  position: absolute;
+  z-index: 5;
+  width: max(9px, 13cqw);
+  height: max(6px, 7.6cqw);
+  transform: translate(-50%, -50%) rotate(var(--turn));
+  pointer-events: none;
+}
+.arrow::before,
+.arrow::after {
+  content: "";
+  position: absolute;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+.arrow::before { inset: -2px -3px -1.5px; background: rgba(0, 0, 0, 0.9); }
+.arrow::after { inset: 0; background: linear-gradient(180deg, var(--barb-light, #f6eed6), var(--barb-dark, #b9a986)); }
+
+/* Yours and theirs. These stay saturated all the way to the tip: the card's own frame is already
+   a muted green, red or blue, so the arrows have to sit clearly apart from it in tone — otherwise
+   a Green card of yours and a Green card of theirs look the same at a glance. */
+.card.owner-0 { --barb-light: #6ff2a4; --barb-dark: #147a3f; }
+.card.owner-1 { --barb-light: #ff8f6a; --barb-dark: #a82a12; }
+.card.owner-0 .arrow::after,
+.card.owner-1 .arrow::after {
+  box-shadow: 0 0 max(4px, 5cqw) color-mix(in srgb, var(--barb-light) 70%, transparent);
+}
+/* Until the blow lands, the card still flies its old owner's arrows. */
+.card.turning.owner-0 { --barb-light: #ff8f6a; --barb-dark: #a82a12; }
+.card.turning.owner-1 { --barb-light: #6ff2a4; --barb-dark: #147a3f; }
+.arrow.dir-N { --turn: 0deg; left: 50%; top: 3.6cqw; }
+.arrow.dir-NE { --turn: 45deg; left: calc(100% - 4.4cqw); top: 4.4cqw; }
+.arrow.dir-E { --turn: 90deg; left: calc(100% - 3.6cqw); top: 50%; }
+.arrow.dir-SE { --turn: 135deg; left: calc(100% - 4.4cqw); top: calc(100% - 4.4cqw); }
+.arrow.dir-S { --turn: 180deg; left: 50%; top: calc(100% - 3.6cqw); }
+.arrow.dir-SW { --turn: 225deg; left: 4.4cqw; top: calc(100% - 4.4cqw); }
+.arrow.dir-W { --turn: 270deg; left: 3.6cqw; top: 50%; }
+.arrow.dir-NW { --turn: 315deg; left: 4.4cqw; top: 4.4cqw; }
+
+/* Attack and Defense: a small plaque at the bottom, just inside the frame. */
+.stats {
+  position: absolute;
+  z-index: 5;
+  left: 50%;
+  bottom: max(3px, 7.5cqw);
+  display: flex;
+  gap: max(2px, 1.5cqw);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.stat {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-width: max(20px, 20cqw);
+  height: max(15px, 15cqw);
+  padding: 0 max(2px, 1.5cqw) 0 max(9px, 8cqw);
+  border-radius: max(2px, 2.5cqw);
+  background: var(--grain), linear-gradient(160deg, #2b2a24, #0d0c0a);
+  background-blend-mode: overlay, normal;
+  box-shadow: inset 0 0 0 max(1px, 0.8cqw) var(--stat-edge), 0 1px 2px rgba(0, 0, 0, 0.7);
+  font-family: var(--font-numbers);
+  font-weight: 700;
+  font-size: max(10px, 11.5cqw);
+  line-height: 1;
+  color: #f3eedf;
+  text-shadow: 0 1px 1px #000;
+}
+.stat::before {
+  content: "";
+  position: absolute;
+  left: max(2px, 2cqw);
+  top: 50%;
+  width: max(6px, 5.5cqw);
+  height: max(6px, 5.5cqw);
+  transform: translateY(-50%);
+  background: var(--stat-edge);
+  -webkit-mask: var(--icon) center / contain no-repeat;
+  mask: var(--icon) center / contain no-repeat;
+}
+.stat.atk {
+  --stat-edge: #cf7f5f;
+  --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M14.5 1 15 1.5 7.5 9 7 8.5 6.5 8zM4.2 8.3l3.5 3.5-1 1-1.1-1.1L3.3 14 2 12.7l2.3-2.3L3.2 9.3z'/%3E%3C/svg%3E");
+}
+.stat.def {
+  --stat-edge: #86aac4;
+  --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 1 14 3v5c0 3.5-2.6 6-6 7-3.4-1-6-3.5-6-7V3z'/%3E%3C/svg%3E");
+}
+/* Raised or lowered numbers get a small carved arrow. */
+.stat.buff::after,
+.stat.debuff::after {
+  position: absolute;
+  top: -0.4cqw;
+  right: 0.6cqw;
+  font-size: max(6px, 5.5cqw);
+  line-height: 1;
+  text-shadow: 0 0 2px #000;
+}
+.stat.buff::after { content: "\25B2"; color: #a6dc9a; }
+.stat.debuff::after { content: "\25BC"; color: #f08a6c; }
+
+.card { -webkit-touch-callout: none; user-select: none; }
+
+.want-green { --want: var(--green); }
+.want-red { --want: var(--red); }
+.want-blue { --want: var(--blue); }
+
+/* Rarity: one to four carved dots on the top frame, between the corner and top arrows. */
+.rarity-marks {
+  position: absolute;
+  z-index: 4;
+  top: max(1px, 1.8cqw);
+  left: 14cqw;
+  display: flex;
+  gap: 1.4cqw;
+  pointer-events: none;
+}
+.rarity-marks i {
+  width: 2.4cqw;
+  height: 2.4cqw;
+  border-radius: 50%;
+  background: var(--mark, #c9b596);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.85);
+}
+.rarity-rare { --mark: #d3dbd5; }
+.rarity-epic { --mark: #bba6e2; }
+.rarity-legendary { --mark: #e2b36a; }
+
+/* A line on the inside of the frame, in the wanted color, on the side the card wants it
+   (dashed all the way around for "anywhere next to it"). */
+.want-mark {
+  position: absolute;
+  z-index: 4;
+  inset: max(3px, 6cqw);
+  border: 0 solid var(--want);
+  border-radius: 2px;
+  pointer-events: none;
+}
+.want-mark.side-N { border-top-width: max(2px, 1.6cqw); }
+.want-mark.side-E { border-right-width: max(2px, 1.6cqw); }
+.want-mark.side-S { border-bottom-width: max(2px, 1.6cqw); }
+.want-mark.side-W { border-left-width: max(2px, 1.6cqw); }
+.want-mark.side-any { border-width: max(1.5px, 1.1cqw); border-style: dashed; }
+.cell .want-mark { inset: max(4px, 7.5cqw); }
+.cell .card:not(.advantaged) .want-mark { opacity: 0.45; }
+
+/* Advantage: a thin inlaid line in the wanted color. */
+.card.advantaged::before {
+  content: "";
+  position: absolute;
+  z-index: 4;
+  inset: max(4px, 7cqw);
+  border: 1px solid var(--want);
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+.board.selecting .cell.empty.advantage-hint {
+  border-color: var(--want);
+  box-shadow: inset 0 0 0 2px var(--want), inset 0 3px 10px rgba(0, 0, 0, 0.7);
+  animation: none;
+}
+.advantage-hint-label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 7%;
+  font-family: var(--font-display);
+  font-size: clamp(0.7rem, calc(var(--cell) * 0.085), 1rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+  color: color-mix(in srgb, var(--want) 70%, #fff);
+  pointer-events: none;
+}
+
+.card.placed { animation: place 0.35s cubic-bezier(0.2, 1.3, 0.4, 1); }
+/* A card about to fall stands there in one piece until the blow actually reaches it, still
+   flying its old owner's arrows (above). Only then does it turn. */
+.card.flipped { animation: flip 0.45s ease-out both; }
+
+/* ---------- Desktop: a bigger board, opponent's hand above it and yours below ---------- */
+
+@media (min-width: 900px) and (min-height: 620px) {
+  /* Hands scale with the window height; the board takes what's left.
+     The 5×5 board is 6.67 cells tall, both hands together about 2.2 hand cards, and the Rite
+     bar takes a row of its own. */
+  :root {
+    --hand-base: clamp(80px, calc((100vh - 124px) * 0.12), 124px);
+    --hand-card: var(--hand-base);
+    --cell: min(170px, calc((100vh - 178px - var(--hand-base) * 2.2) / 6.67));
+  }
+  @supports (height: 100dvh) {
+    :root {
+      --hand-base: clamp(80px, calc((100dvh - 124px) * 0.12), 124px);
+      --cell: min(170px, calc((100dvh - 178px - var(--hand-base) * 2.2) / 6.67));
+    }
+  }
+
+  /* The twist line on Trail matches takes a row, so the board gives up that height. */
+  #game.has-twists { --cell: min(170px, calc((100vh - 212px - var(--hand-base) * 2.2) / 6.67)); }
+  @supports (height: 100dvh) {
+    #game.has-twists { --cell: min(170px, calc((100dvh - 212px - var(--hand-base) * 2.2) / 6.67)); }
+  }
+
+  body[data-screen="game"] #app { max-width: 960px; }
+
+  #game { gap: 8px; }
+  .hand { gap: 12px; }
+  #hand-o,
+  .hand-row.foe-row { --hand-card: calc(var(--hand-base) * 0.75); }
+}
+
+/* ---------- Collection ---------- */
+
+#collection { gap: 14px; }
+.screen-title { flex: 1; margin: 0; text-align: center; font-size: 1.6rem; color: #cdd6bb; }
+
+.deck-panel {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--grain), linear-gradient(180deg, #141b14, #0d120d);
+  background-blend-mode: soft-light, normal;
+}
+.deck-head h3 { margin: 0 0 2px; font-size: 1.15rem; }
+.deck-count { color: var(--moss); font-family: var(--font-numbers); font-size: 0.95rem; }
+.deck-count.incomplete { color: #e08a70; }
+.deck-head .muted { font-size: 0.8rem; }
+
+.deck-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(58px, 1fr));
+  gap: 6px;
+  margin-top: 10px;
+}
+/* A deck slot is the card plus a small button to take it out. The card itself opens it; only
+   the ✕ removes it, so a deck can't be dismantled by tapping the thing you wanted to read. */
+.deck-slot { position: relative; }
+.deck-slot-face {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: none;
+  border-radius: 5px;
+  background: none;
+  cursor: pointer;
+  transition: transform 0.12s;
+}
+.deck-slot-face:hover { transform: translateY(-2px); }
+.deck-slot.empty {
+  aspect-ratio: 4 / 5;
+  border: 1px dashed #34452f;
+  border-radius: 5px;
+  background: rgba(0, 0, 0, 0.25);
+  cursor: default;
+}
+.deck-drop {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid #6b2f22;
+  border-radius: 50%;
+  background: #2a1410;
+  font-size: 0.72rem;
+  line-height: 1;
+  color: #e89076;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.12s, background 0.12s, color 0.12s;
+}
+/* Always there for touch and keyboards; it fades in on hover for mice. */
+.deck-slot:hover .deck-drop,
+.deck-drop:focus-visible { opacity: 1; }
+@media (hover: none) { .deck-drop { opacity: 1; } }
+.deck-drop:hover { background: #7e2718; color: #ffdccf; }
+/* Unspent upgrade points on a campaign card, so you can see where they can go from the strip. */
+.deck-points {
+  position: absolute;
+  bottom: -6px;
+  left: -5px;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 4px;
+  border: 1px solid #6c5a2e;
+  border-radius: 10px;
+  background: #2a2413;
+  font-family: var(--font-numbers);
+  font-size: 0.75rem;
+  line-height: 1;
+  color: #e3b56f;
+  pointer-events: none;
+}
+
+.filters { display: flex; gap: 6px; }
+.filters button {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--bg-2);
+  color: var(--muted);
+  font-size: 1rem;
+  cursor: pointer;
+}
+.filters button[aria-pressed="true"] { color: var(--text); border-color: #3f553d; background: var(--panel-hover); }
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 16px 10px;
+  padding-bottom: 24px;
+}
+.tile { display: flex; flex-direction: column; gap: 4px; text-align: center; }
+.tile-face { padding: 0; border: none; border-radius: 5px; background: none; cursor: pointer; transition: transform 0.12s; }
+.tile-face:hover { transform: translateY(-3px); }
+.tile.locked .card { filter: grayscale(0.85) brightness(0.5); }
+.tile.in-deck .tile-face .card { box-shadow: 0 0 0 2px var(--moss), 0 6px 16px rgba(0, 0, 0, 0.6); }
+.tile-name { margin-top: 2px; font-size: 0.78rem; line-height: 1.2; min-height: 2.4em; }
+.tile-rarity { font-size: 0.8rem; letter-spacing: 0.04em; }
+.btn.buy { color: #e3b56f; }
+.btn.in-deck { color: var(--moss); border-color: #3f553d; }
+
+.rarity-text-common { color: #b39a7c; }
+.rarity-text-rare { color: #7fc29d; }
+.rarity-text-epic { color: #ad9ad6; }
+.rarity-text-legendary { color: #e0ad5e; }
+
+/* ---------- Packs: crates of cards, stacked like trail stops ---------- */
+
+#packs { gap: 12px; }
+.packs-link { align-self: center; margin: 2px 0 6px; }
+
+.pack-list { display: grid; gap: 14px; padding-bottom: 8px; }
+
+.pack {
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--pack-accent, var(--line));
+  border-radius: 4px;
+  background: var(--grain), linear-gradient(180deg, #141b14, #0d120d);
+  background-blend-mode: soft-light, normal;
+  transition: border-color 0.18s, transform 0.12s;
+}
+.pack-green { --pack-accent: var(--green); }
+.pack-red { --pack-accent: var(--red); }
+.pack-blue { --pack-accent: var(--blue); }
+
+/* Only the opening choice is selectable. */
+.pack[role="radio"] { cursor: pointer; }
+.pack[role="radio"]:hover { border-color: #3f553d; }
+.pack[role="radio"]:focus-visible { outline: 2px solid var(--moss); outline-offset: 2px; }
+.pack.picked {
+  border-color: var(--moss);
+  box-shadow: inset 0 0 0 1px rgba(127, 176, 105, 0.35), 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+.pack.complete { opacity: 0.72; }
+
+.pack-head h3 { margin: 0; font-size: 1.35rem; color: #cdd6bb; }
+.pack-tagline { margin: 1px 0 0; font-size: 0.85rem; font-style: italic; color: var(--muted); }
+.pack-meta {
+  margin: 8px 0 0;
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.pack-about { margin: 6px 0 0; font-size: 0.84rem; line-height: 1.4; color: #b8c2ac; }
+.pack-label {
+  margin: 12px 0 4px;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.pack-cards {
+  display: grid;
+  grid-template-columns: repeat(var(--pack-cols, 5), 1fr);
+  gap: 6px;
+  max-width: 430px;
+  margin-top: 8px;
+}
+.pack-card { position: relative; }
+.pack-card.owned .card { filter: grayscale(0.8) brightness(0.55); }
+.pack-owned {
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  transform: translateX(-50%);
+  padding: 1px 5px;
+  border-radius: 2px;
+  background: rgba(8, 12, 8, 0.85);
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.pack .btn.small { max-width: 180px; margin-top: 12px; padding: 8px 14px; font-size: 0.95rem; }
+
+/* The confirm button rides along the bottom while you scroll the packs. */
+.packs-footer {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  padding: 12px 0 16px;
+  background: linear-gradient(180deg, rgba(7, 10, 7, 0), rgba(7, 10, 7, 0.92) 40%);
+}
+.packs-footer[hidden] { display: none; }
+
+@media (min-width: 560px) {
+  .pack-cards { max-width: 380px; }
+}
+
+/* ---------- Dialogs ---------- */
+
+dialog {
+  width: min(92vw, 380px);
+  max-height: 90vh;
+  padding: 24px;
+  border: 1px solid #34452f;
+  border-radius: 6px;
+  background: var(--grain), linear-gradient(180deg, #151d15, #0c110c);
+  background-blend-mode: soft-light, normal;
+  color: var(--text);
+  text-align: center;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.75);
+}
+dialog::backdrop { background: rgba(2, 4, 2, 0.8); backdrop-filter: blur(3px); }
+
+.close-btn { position: absolute; top: 10px; right: 10px; width: 34px; height: 34px; font-size: 0.9rem; }
+
+.result-title { margin: 0; font-size: 2.4rem; color: #e08a70; }
+dialog.won .result-title { color: var(--moss); }
+.result-score { margin: 2px 0 0; font-family: var(--font-numbers); font-size: 1.4rem; font-weight: 700; }
+.result-grid { margin: 12px 0; font-family: inherit; font-size: 1.35rem; line-height: 1.15; }
+dialog.drawn .result-title { color: #d9c28a; }
+
+.rewards {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.3);
+}
+.rewards[hidden] { display: none; }
+.reward-line { margin: 0; font-size: 1.05rem; color: #e3b56f; }
+.reward-line.streak { color: #d9a15c; }
+.reward-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px;
+  border: 1px solid #6a5530;
+  border-radius: 4px;
+  background: rgba(227, 181, 111, 0.07);
+  text-align: left;
+}
+.reward-card-face { width: 96px; flex: none; }
+.reward-card-text { display: grid; gap: 3px; font-size: 0.95rem; }
+.reward-card-text strong { font-family: var(--font-display); font-size: 1.5rem; font-weight: 400; }
+
+.name-field {
+  display: grid;
+  gap: 4px;
+  margin: 12px auto;
+  max-width: 320px;
+  text-align: left;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.name-field input {
+  font: inherit;
+  font-size: 1rem;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.actions { display: grid; gap: 8px; justify-items: center; }
+
+.card-dialog-card { width: min(56vw, 220px); margin: 8px auto 12px; }
+.card-dialog-card.locked .card { filter: grayscale(0.85) brightness(0.55); }
+.rarity-label { margin: 0; font-size: 1rem; letter-spacing: 0.06em; }
+.card-dialog-name { margin: 0 0 8px; font-size: 1.7rem; }
+.flavor { margin: 0 0 18px; color: var(--muted); font-style: italic; line-height: 1.45; }
+
+.howto { text-align: left; }
+.howto h2 { margin-top: 0; font-size: 1.8rem; color: #cdd6bb; }
+.howto ol { padding-left: 1.2em; line-height: 1.5; }
+.howto li { margin-bottom: 6px; }
+
+.load-error {
+  position: fixed;
+  inset: auto 16px 16px;
+  z-index: 100;
+  max-width: 488px;
+  margin: 0 auto;
+  padding: 14px 16px;
+  border: 1px solid var(--clay);
+  border-radius: 6px;
+  background: #24100b;
+  line-height: 1.5;
+}
+.load-error[hidden] { display: none; }
+.load-error a { color: var(--moss); }
+.load-error code { padding: 1px 5px; border-radius: 4px; background: rgba(255, 255, 255, 0.1); }
+
+/* ---------- Abilities & card preview ---------- */
+
+.filters.colors { margin-top: -6px; }
+.filters.colors button { font-size: 0.9rem; }
+
+.kin-dot {
+  display: inline-block;
+  width: 0.7em;
+  height: 0.7em;
+  border-radius: 2px;
+  background: var(--kin);
+  vertical-align: -0.02em;
+}
+
+.ability {
+  padding: 8px 10px;
+  border-left: 3px solid var(--want);
+  border-radius: 0 4px 4px 0;
+  background: rgba(0, 0, 0, 0.32);
+  text-align: left;
+  line-height: 1.35;
+}
+.ability p { margin: 0; }
+.ability-want { font-size: 0.82rem; color: var(--muted); }
+.ability-tag {
+  margin-right: 6px;
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--want) 70%, #fff);
+}
+.ability .ability-effect { margin-top: 3px; font-size: 0.98rem; color: var(--text); }
+.ability .ability-state { margin-top: 6px; font-size: 0.75rem; color: var(--muted); }
+.ability-note {
+  margin: 0 0 4px;
+  font-size: 0.82em;
+  font-style: italic;
+  color: var(--muted);
+}
+.ability.is-active .ability-state { color: color-mix(in srgb, var(--want) 70%, #fff); }
+.card-dialog .ability { margin: 0 0 14px; }
+
+.card-preview {
+  position: fixed;
+  z-index: 60;
+  top: 0;
+  left: 0;
+  width: 250px;
+  padding: 14px;
+  border: 1px solid #34452f;
+  border-radius: 6px;
+  background: var(--grain), linear-gradient(180deg, #151d15, #0c110c);
+  background-blend-mode: soft-light, normal;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8);
+  color: var(--text);
+  pointer-events: none;
+}
+.card-preview[hidden] { display: none; }
+.preview-face { width: 160px; margin: 0 auto 12px; }
+.preview-meta { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 0.8rem; letter-spacing: 0.04em; color: var(--muted); }
+.preview-name { margin: 2px 0 8px; font-family: var(--font-display); font-size: 1.35rem; font-weight: 400; }
+.preview-flavor { margin: 8px 0 0; font-size: 0.78rem; font-style: italic; line-height: 1.4; color: var(--muted); }
+
+@media (max-height: 560px) {
+  .preview-face { width: 110px; }
+  .preview-flavor { display: none; }
+}
+
+/* ---------- Hidden hands, draw pile, coin toss ---------- */
+
+.card-back {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  display: grid;
+  place-items: center;
+  border-radius: 5px;
+  background: var(--grain), radial-gradient(ellipse at 50% 45%, #2b3327, #0d110c 70%);
+  background-blend-mode: soft-light, normal;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.65), inset 0 0 0 3px #2f382b, inset 0 0 0 5px #0a0d09;
+  container-type: inline-size;
+}
+.card-back::before {
+  content: "\2766\FE0E";
+  font-family: "Segoe UI Symbol", "Noto Sans Symbols 2", serif;
+  font-size: 40cqw;
+  line-height: 1;
+  color: #4f6746;
+}
+
+.pile {
+  align-self: center;
+  font-size: 0.75rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.hand-slot.drawn { animation: draw 0.4s ease-out; }
+
+.coin-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: rgba(2, 4, 2, 0.72);
+  backdrop-filter: blur(2px);
+  text-align: center;
+}
+.coin-overlay[hidden] { display: none; }
+.coin-title { margin: 0; font-family: var(--font-display); font-size: 1.2rem; color: var(--muted); }
+.coin-stage { perspective: 900px; margin-top: 120px; }
+.coin { position: relative; width: 150px; height: 150px; transform-style: preserve-3d; }
+.coin-face {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 2px;
+  border-radius: 50%;
+  backface-visibility: hidden;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  letter-spacing: 0.06em;
+  background-blend-mode: soft-light, normal;
+}
+.coin-face .glyph { font-family: "Segoe UI Symbol", "Noto Sans Symbols 2", serif; font-size: 56px; line-height: 1; }
+/* Carved stone tokens, not metal. */
+.coin-face.you {
+  background: var(--grain), radial-gradient(circle at 40% 35%, #eee5cb, #b4a582 70%, #7a6d53);
+  color: #2e2519;
+  box-shadow: inset 0 0 0 7px #8c7f61, inset 0 0 0 9px #5a503c, inset 0 -8px 16px rgba(0, 0, 0, 0.35);
+}
+.coin-face.rival {
+  transform: rotateX(180deg);
+  background: var(--grain), radial-gradient(circle at 40% 35%, #4e4757, #1c1920 70%, #0b0a0d);
+  color: #d9d0e2;
+  box-shadow: inset 0 0 0 7px #2e2934, inset 0 0 0 9px #060508, inset 0 -8px 16px rgba(0, 0, 0, 0.5);
+}
+.coin-result { min-height: 1.4em; margin: 0; font-family: var(--font-display); font-size: 1.9rem; color: #e6dcc3; }
+
+/* ---------- Field effects ---------- */
+
+/* Tiles keep their look under cards: a shaft of sunlight, or undergrowth creeping in. */
+.cell.sunlit::before,
+.cell.shade::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.cell.sunlit::before {
+  background: url("../art/field/sunlit.webp") center / cover no-repeat;
+  mix-blend-mode: screen;
+  animation: sunbeam 7s ease-in-out infinite alternate;
+}
+.cell.shade::before {
+  z-index: 0; /* under the card, so the ferns never hide its Attack and Defense */
+  background: url("../art/field/undergrowth.webp") center bottom / cover no-repeat;
+  transform-origin: 50% 100%;
+  animation: undergrowth 5s ease-in-out infinite alternate;
+}
+
+/* Twists: one layer over the whole board. */
+.board-wrap { position: relative; width: fit-content; max-width: 100%; margin: 0 auto; }
+.board-fx {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  overflow: hidden;
+  border-radius: 6px;
+  pointer-events: none;
+  container-type: size;
+}
+
+.fx-wildfire::before {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 32%;
+  background: linear-gradient(to top, rgba(190, 70, 30, 0.24), transparent);
+  animation: heat 3s ease-in-out infinite alternate;
+}
+.fx-ember {
+  position: absolute;
+  left: var(--x);
+  bottom: -6px;
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffd28a, #e0602c 55%, rgba(160, 40, 20, 0) 100%);
+  opacity: 0;
+  animation: ember var(--dur) linear var(--delay) infinite;
+}
+
+.fx-water {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 9%;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='40' viewBox='0 0 120 40' preserveAspectRatio='none'%3E%3Cpath d='M0 12 Q15 4 30 12 T60 12 T90 12 T120 12 V40 H0Z' fill='%23336a8f'/%3E%3Cpath d='M0 12 Q15 4 30 12 T60 12 T90 12 T120 12' fill='none' stroke='%239cc4dd' stroke-width='1.5'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-size: 120px 100%;
+  opacity: 0.14; /* just a moving shimmer over the painted water; bottom-row numbers stay readable */
+  animation: waves 6s linear infinite;
+}
+.fx-water.back { height: 13%; opacity: 0.08; animation-duration: 10s; animation-direction: reverse; }
+
+.fx-fog {
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(ellipse 40% 30% at 30% 40%, rgba(3, 6, 3, 0.55), transparent 70%),
+    radial-gradient(ellipse 35% 25% at 72% 66%, rgba(3, 6, 3, 0.5), transparent 70%);
+  animation: fog 18s ease-in-out infinite alternate;
+}
+.fx-fog.two { opacity: 0.7; animation-duration: 26s; animation-direction: alternate-reverse; }
+.fx-deep-shade { box-shadow: inset 0 0 60px 18px rgba(0, 0, 0, 0.55); }
+
+.fx-thorns {
+  position: absolute;
+  inset: 0;
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 2px rgba(140, 40, 25, 0.55), inset 0 0 24px rgba(120, 30, 20, 0.35);
+  animation: thorn-pulse 2.8s ease-in-out infinite;
+}
+.claw {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  background: repeating-linear-gradient(115deg, transparent 0 20%, rgba(25, 6, 3, 0.85) 20% 23%, rgba(200, 80, 50, 0.5) 23% 24%, transparent 24% 32%);
+  clip-path: inset(0 100% 0 0);
+  animation: claw 0.45s ease-out forwards, fade-out 1s ease-in 1.2s forwards;
+}
+
+/* ---------- Attacks ----------
+   Every attack a move throws is drawn here, over the cards: a rake of claws travelling out of
+   the attacker along the arrow it used. It ends in a burst where it bites, or rings off a stone
+   guard where the defender turns it aside. Positions come from the board's own geometry, so this
+   layer sits on top of the grid rather than inside any one square. */
+
+.strike-fx {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  overflow: hidden;
+  border-radius: 6px;
+  pointer-events: none;
+}
+.strike-fx.owner-0 { --rake: #6fd896; }
+.strike-fx.owner-1 { --rake: #ec6f52; }
+
+.strike {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--len);
+  height: var(--thick);
+  margin-top: calc(var(--thick) / -2);
+  transform-origin: 0 50%;
+  rotate: var(--angle);
+  /* Three tines, spreading and brightening toward the card they reach. */
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0 12%,
+    color-mix(in srgb, var(--rake) 55%, #fbfff4) 12% 29%,
+    transparent 29% 38%);
+  clip-path: polygon(0 46%, 100% 0, 100% 100%, 0 54%);
+  -webkit-mask-image: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.35) 40%, #000);
+  mask-image: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.35) 40%, #000);
+  filter:
+    drop-shadow(0 0 4px color-mix(in srgb, var(--rake) 85%, transparent))
+    drop-shadow(0 0 12px rgba(0, 0, 0, 0.8));
+}
+.strike.lands {
+  animation:
+    strike-rake var(--travel) cubic-bezier(0.3, 0.7, 0.35, 1) var(--delay) both,
+    fade-out 180ms ease-in calc(var(--delay) + var(--travel)) forwards;
+}
+.strike.held {
+  animation:
+    strike-turned var(--travel) cubic-bezier(0.2, 0.9, 0.5, 1) var(--delay) both,
+    fade-out 240ms ease-in calc(var(--delay) + var(--travel)) forwards;
+}
+
+/* Where an attack bites: a ring of the attacker's colour thrown out over the card it took. */
+.impact {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--size);
+  height: var(--size);
+  margin: calc(var(--size) / -2) 0 0 calc(var(--size) / -2);
+  border-radius: 50%;
+  opacity: 0;
+  border: 2px solid color-mix(in srgb, var(--rake) 85%, #fbfff4);
+  background: radial-gradient(circle, color-mix(in srgb, var(--rake) 38%, transparent), transparent 62%);
+  box-shadow: 0 0 22px color-mix(in srgb, var(--rake) 55%, transparent);
+  animation: impact-burst 320ms cubic-bezier(0.2, 0.8, 0.3, 1) var(--delay) forwards;
+}
+
+/* An attack that fails breaks on a shield: a dome of banded stone the defender gets up on the
+   side the blow is coming from, rotated to face it. Clipping a ring to the quarter nearest the
+   attacker is what makes it read as something held up, rather than a circle drawn round a card. */
+.guard {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--size);
+  height: var(--size);
+  margin: calc(var(--size) / -2) 0 0 calc(var(--size) / -2);
+  rotate: var(--angle);
+  opacity: 0;
+  animation: guard-raise 440ms cubic-bezier(0.2, 0.9, 0.3, 1) var(--delay) forwards;
+}
+.guard::before,
+.guard::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  /* A wedge of the ring, about a third of it, centred on the side the attacker is on. */
+  clip-path: polygon(50% 50%, 108% -30%, 108% 130%);
+}
+/* Cut in dark first, so the shield holds its shape over bright card art. */
+.guard::before {
+  inset: calc(var(--size) * -0.035);
+  border: max(5px, calc(var(--size) * 0.13)) solid rgba(12, 15, 10, 0.85);
+}
+/* Then the face of it, banded stone, lit along the edge the claws land on. */
+.guard::after {
+  inset: 0;
+  border: max(3px, calc(var(--size) * 0.085)) solid rgba(214, 218, 196, 0.95);
+  box-shadow: 0 0 16px rgba(220, 224, 200, 0.5), inset 0 0 18px rgba(220, 224, 200, 0.3);
+}
+
+/* A card that was attacked and stood its ground. */
+.card.held { animation: hold 0.34s ease-out both; }
+
+.fx-vine-layer { position: absolute; inset: 0; }
+.fx-vines { position: absolute; inset: 0; width: 100%; height: 100%; }
+.fx-vines .vine {
+  fill: none;
+  stroke: #4c7a3c;
+  stroke-width: 3;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: vine-grow 2.4s ease-out forwards;
+}
+.fx-vines .leaf {
+  fill: #3f6b35;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: leaf-in 0.6s ease-out forwards, leaf-sway 4s ease-in-out infinite alternate;
+}
+
+/* Blocked squares: a fallen carved block, idol rubble, or a knot of roots nobody can play on. */
+/* A blocked square is a boulder lying ON the slab, not a square you could play in. It is convex
+   where a playable square is concave: lit from above instead of shadowed, casting a shadow onto
+   the board instead of catching one, sitting proud of the grid and slightly askew instead of
+   flush and square. Read together, playable squares are dark holes and these are pale lumps. */
+.cell.blocked {
+  z-index: 1; /* so the boulder and its shadow sit over the slab, not under the neighbours */
+  border: none;
+  border-radius: 16% / 13%;
+  transform: scale(1.05) rotate(var(--tilt, 0deg));
+  background:
+    radial-gradient(ellipse 130% 85% at 32% 14%, rgba(255, 249, 226, 0.15), transparent 58%),
+    linear-gradient(197deg, rgba(255, 250, 232, 0.07) 8%, transparent 45%, rgba(0, 0, 0, 0.55)),
+    url("../art/field/blocked-1.webp") center / cover no-repeat,
+    #45423a;
+  box-shadow:
+    inset 0 calc(var(--cell) * 0.028) calc(var(--cell) * 0.05) rgba(255, 246, 222, 0.18),
+    inset 0 calc(var(--cell) * -0.075) calc(var(--cell) * 0.1) rgba(0, 0, 0, 0.7),
+    0 calc(var(--cell) * 0.055) calc(var(--cell) * 0.1) rgba(0, 0, 0, 0.8),
+    0 calc(var(--cell) * 0.015) calc(var(--cell) * 0.02) rgba(0, 0, 0, 0.7);
+  filter: saturate(0.4) brightness(0.98) contrast(0.92); /* inert grey rock: distinct, not loud */
+  cursor: not-allowed;
+}
+/* Three boulders, each sitting a little differently, so a run of them doesn't look like tiling. */
+.cell.blocked.stone-0 { --tilt: -1.6deg; }
+.cell.blocked.stone-1 {
+  --tilt: 2deg;
+  border-radius: 13% / 17%;
+  background-image:
+    radial-gradient(ellipse 130% 85% at 32% 14%, rgba(255, 249, 226, 0.15), transparent 58%),
+    linear-gradient(197deg, rgba(255, 250, 232, 0.07) 8%, transparent 45%, rgba(0, 0, 0, 0.55)),
+    url("../art/field/blocked-2.webp");
+}
+.cell.blocked.stone-2 {
+  --tilt: -0.7deg;
+  border-radius: 18% / 12%;
+  background-image:
+    radial-gradient(ellipse 130% 85% at 32% 14%, rgba(255, 249, 226, 0.15), transparent 58%),
+    linear-gradient(197deg, rgba(255, 250, 232, 0.07) 8%, transparent 45%, rgba(0, 0, 0, 0.55)),
+    url("../art/field/blocked-3.webp");
+}
+
+.fx-dust {
+  position: absolute;
+  left: var(--x);
+  top: -6px;
+  width: var(--size);
+  height: var(--size);
+  border-radius: 30%;
+  background: #8a8577;
+  opacity: 0;
+  animation: dust var(--dur) linear var(--delay) infinite;
+}
+.fx-cracks {
+  position: absolute;
+  inset: 0;
+  border-radius: 6px;
+  background:
+    linear-gradient(35deg, transparent 48%, rgba(0, 0, 0, 0.45) 49%, transparent 50.5%) 0 0 / 55% 38% no-repeat,
+    linear-gradient(-60deg, transparent 48%, rgba(0, 0, 0, 0.4) 49%, transparent 50.3%) 100% 100% / 50% 35% no-repeat;
+  box-shadow: inset 0 0 0 2px rgba(90, 80, 65, 0.4), inset 0 0 30px rgba(20, 18, 14, 0.5);
+}
+
+/* ---------- Capture preview ---------- */
+
+.card.ghost { opacity: 0.62; pointer-events: none; animation: none; }
+.cell.previewing .tile-badge,
+.cell.previewing .advantage-hint-label { opacity: 0; }
+.cell.would-flip .card { animation: threat 0.9s ease-in-out infinite; }
+.cell.would-flip::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  z-index: 5;
+  border-radius: 6px;
+  box-shadow: 0 0 0 3px #6fd896;
+  pointer-events: none;
+}
+
+/* ---------- Rites ----------
+   The one-shot power each side brings. Rites get their own colour — amber, the colour of the
+   currency and of nothing else on the board — so aiming one is never confused with ownership
+   (green and red) or with the colour a card wants (its own Green, Red or Blue). */
+
+:root { --rite: #e3b56f; --rite-deep: #7a5a24; }
+
+/* Each side's Rite sits beside that side's hand, as a token the size of a card in it: yours by
+   your hand at the bottom, your opponent's by theirs at the top. Square, so it never reads as a
+   card you could play. */
+
+.hand-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.rite-holder { position: relative; flex: none; }
+
+.rite-token {
+  position: relative;
+  width: var(--hand-card);
+  height: var(--hand-card);
+  flex: none;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--rite-deep);
+  border-radius: 6px;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 20%, rgba(227, 181, 111, 0.16), transparent 70%),
+    linear-gradient(#211c12, #14110c);
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.8), 0 4px 12px rgba(0, 0, 0, 0.6);
+  color: inherit;
+  font: inherit;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+button.rite-token { cursor: pointer; }
+button.rite-token:disabled { cursor: default; }
+button.rite-token:not(:disabled):hover {
+  border-color: var(--rite);
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.7), 0 0 16px rgba(227, 181, 111, 0.35);
+  transform: translateY(-4px);
+}
+
+/* The face: the painting if there is one, else the sigil carved in pale stone. */
+.rite-face { position: absolute; inset: 0; display: grid; place-items: center; }
+.rite-face img { width: 100%; height: 100%; object-fit: contain; }
+.rite-sigil {
+  font-family: "Segoe UI Symbol", "Noto Sans Symbols 2", "Noto Sans Symbols", serif;
+  font-size: 46cqw;
+  line-height: 1;
+  color: transparent;
+  background: linear-gradient(180deg, #f0e7cc, #a8996f 58%, #4a4330);
+  -webkit-background-clip: text;
+  background-clip: text;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.95));
+  transform: translateY(-8%);
+}
+.rite-label {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 2px 2px 3px;
+  background: linear-gradient(transparent, rgba(8, 10, 7, 0.9) 45%);
+  font-family: var(--font-display);
+  font-size: max(8px, 15cqw);
+  line-height: 1.05;
+  text-align: center;
+  color: var(--rite);
+}
+.rite-token { container-type: inline-size; }
+
+/* Spent: the colour drains out and a bar is struck across it. */
+.rite-token.spent { border-color: #3a3a33; filter: grayscale(0.9) brightness(0.55); }
+.rite-token.spent::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -10%;
+  width: 120%;
+  height: 2px;
+  background: rgba(226, 222, 200, 0.75);
+  transform: rotate(-24deg);
+}
+/* Armed and waiting for a target. */
+.rite-token.aiming {
+  border-color: var(--rite);
+  animation: rite-armed 1.1s ease-in-out infinite;
+}
+
+/* The confirm panel: what it does, and one deliberate tap before it is spent. */
+.rite-panel {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 0;
+  z-index: 30;
+  width: min(92vw, 330px);
+  padding: 14px 16px;
+  border: 1px solid var(--rite-deep);
+  border-radius: 6px;
+  background: #14170f;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.8);
+  animation: rise 0.16s ease-out;
+}
+.rite-panel[hidden] { display: none; }
+.rite-panel-head {
+  margin: 0 0 6px;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  color: var(--rite);
+}
+.rite-panel-text { margin: 0 0 8px; font-size: 0.95rem; }
+.rite-panel-flavor { margin: 0 0 10px; font-size: 0.85rem; font-style: italic; color: var(--muted); }
+.rite-panel-once { margin: 0 0 12px; font-size: 0.78rem; color: var(--muted); }
+.rite-actions { display: flex; gap: 8px; }
+.rite-actions .btn { flex: 1; }
+
+/* ---------- Aiming ----------
+   While a Rite is armed, everything it cannot be used on falls back, and the squares it can be
+   used on breathe in turn. The movement is the point: a still outline reads as decoration, a
+   pulse reads as an invitation to pick one. */
+
+.board.aiming .cell:not(.rite-target),
+.hand.aiming .hand-slot:not(.rite-target) {
+  filter: brightness(0.42) saturate(0.45);
+  transition: filter 0.2s;
+}
+.board.aiming .cell,
+.hand.aiming .hand-slot { cursor: default; }
+.cell.rite-target,
+.hand-slot.rite-target { cursor: pointer; }
+
+.cell.rite-target::after,
+.hand-slot.rite-target::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  z-index: 8;
+  border: 2px solid var(--rite);
+  border-radius: 6px;
+  pointer-events: none;
+  animation: aim-pulse 1.5s ease-in-out var(--aim-delay, 0ms) infinite;
+}
+.hand-slot { position: relative; }
+.hand-slot.rite-target { z-index: 2; }
+.cell.rite-target:hover::after,
+.hand-slot.rite-target:hover::after {
+  border-color: #fff3d8;
+  animation-duration: 0.55s;
+}
+
+@keyframes rite-armed {
+  50% { box-shadow: 0 0 16px rgba(227, 181, 111, 0.5); }
+}
+@keyframes aim-pulse {
+  0%, 100% { opacity: 0.45; transform: scale(1); box-shadow: 0 0 0 rgba(227, 181, 111, 0); }
+  45% { opacity: 1; transform: scale(1.035); box-shadow: 0 0 16px rgba(227, 181, 111, 0.55), inset 0 0 14px rgba(227, 181, 111, 0.3); }
+}
+
+/* ---------- The Rite shelf in the Collection ---------- */
+
+.rite-slot { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+.rite-slot-head { display: flex; align-items: baseline; gap: 8px; margin: 0 0 8px; font-size: 0.85rem; }
+.rite-tag {
+  padding: 1px 7px;
+  border: 1px solid var(--rite-deep);
+  border-radius: 3px;
+  font-family: var(--font-display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rite);
+}
+.rite-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 8px;
+}
+.rite-tile {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: rgba(0, 0, 0, 0.3);
+}
+.rite-tile-mark { --hand-card: 58px; flex: none; }
+.rite-tile-body { display: grid; align-content: start; gap: 4px; min-width: 0; }
+/* On the shelf the name is already spelled out beside it, so the mark doesn't repeat it. */
+.rite-tile-mark .rite-label { display: none; }
+.rite-tile.locked .rite-tile-mark { filter: grayscale(0.85) brightness(0.6); }
+.rite-tile.equipped { border-color: var(--rite-deep); background: rgba(227, 181, 111, 0.07); }
+.rite-tile.locked { opacity: 0.72; }
+.rite-name { margin: 0; font-family: var(--font-display); font-size: 1.05rem; color: var(--rite); }
+.rite-tile.locked .rite-name { color: var(--muted); }
+.rite-text { margin: 0 0 6px; font-size: 0.82rem; line-height: 1.35; color: var(--muted); }
+.rite-tile .btn { justify-self: start; }
+
+/* ---------- The draw pile ----------
+   A stack of backs beside the board, one leaf per card you have not drawn yet, so how much is
+   still to come is a thing you can see rather than a number you have to read. */
+
+.draw-pile {
+  --pile-card: clamp(56px, 5.2vw, 84px);
+  position: absolute;
+  top: 50%;
+  right: calc(100% + clamp(14px, 2.2vw, 34px));
+  display: none;
+  width: var(--pile-card);
+  /* The stack grows upward, so the box is one card tall plus the lean of every leaf above it. */
+  height: calc(var(--pile-card) * 1.25 + var(--stack, 0) * 9px);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+.draw-pile .card-back { bottom: 0; }
+.draw-pile .card-back {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  border-radius: 5px;
+  /* A lit top edge on every leaf is what makes the stack countable: without it they are all the
+     same dark rectangle and five cards look like one. */
+  box-shadow:
+    0 -1px 0 rgba(198, 212, 178, 0.32),
+    0 3px 7px rgba(0, 0, 0, 0.8),
+    inset 0 0 0 3px #2f382b,
+    inset 0 0 0 5px #0a0d09;
+  /* Each leaf sits above and a little left of the one under it, leaning a touch further. */
+  transform: translate(calc(var(--n) * -3px), calc(var(--n) * -9px)) rotate(calc(var(--n) * -0.5deg));
+  filter: brightness(calc(1 - var(--n) * 0.035));
+  animation: pile-drawn 0.3s ease-out;
+}
+.draw-pile-count {
+  position: absolute;
+  inset: auto 0 -26px;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+@media (min-width: 1100px) {
+  .draw-pile { display: block; }
+  /* The hand keeps its own count, which would then be saying it twice. */
+  .hand.player .pile { display: none; }
+}
+@keyframes pile-drawn {
+  from { opacity: 0; transform: translate(calc(var(--n) * -3px), calc(var(--n) * -9px - 12px)); }
+}
+
+/* ---------- Sound toggle, twists, toast ---------- */
+
+.sound-toggle { position: relative; font-family: "Segoe UI Symbol", "Noto Sans Symbols 2", serif; }
+.sound-toggle.off { color: var(--muted); }
+.sound-toggle.off::after {
+  content: "";
+  position: absolute;
+  left: 9px;
+  right: 9px;
+  top: 50%;
+  height: 2px;
+  background: var(--clay);
+  transform: rotate(-45deg);
+}
+#home .home-sound { position: absolute; top: 16px; left: max(16px, calc(50% - 264px)); }
+
+.twist-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 16px;
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+  text-align: center;
+}
+.twist-bar[hidden] { display: none; }
+.twist-bar b,
+.trail-twist b { font-family: var(--font-display); font-weight: 400; color: #d9a15c; }
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 70;
+  max-width: calc(100vw - 32px);
+  padding: 10px 16px;
+  border: 1px solid #3f553d;
+  border-radius: 4px;
+  background: var(--grain), linear-gradient(180deg, #1a2519, #0f150f);
+  background-blend-mode: soft-light, normal;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
+  color: var(--text);
+  text-align: center;
+  transform: translateX(-50%);
+  animation: toast-in 0.3s ease-out;
+}
+.toast[hidden] { display: none; }
+
+.reward-line.trail { color: var(--moss); font-family: var(--font-display); font-size: 1.2rem; }
+.reward-line.trophy { color: #cdd6bb; font-size: 0.95rem; }
+
+/* ---------- Jungle Trail ---------- */
+
+#trail { gap: 14px; }
+.trail-intro { margin: 0; text-align: center; font-size: 0.9rem; color: var(--muted); }
+.trail-list { display: grid; gap: 10px; margin: 0; padding: 0 0 24px; list-style: none; }
+.trail-stop {
+  display: grid;
+  grid-template-columns: 64px 1fr auto;
+  align-items: center;
+  gap: 14px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--grain), linear-gradient(180deg, #141b14, #0d120d);
+  background-blend-mode: soft-light, normal;
+}
+.trail-stop.cleared { border-color: #3f553d; }
+.trail-stop.locked { opacity: 0.5; }
+.trail-stop.locked .card { filter: grayscale(0.85) brightness(0.6); }
+.trail-face { width: 64px; }
+.trail-body h3 { margin: 0; font-size: 1.2rem; }
+.trail-body p { margin: 2px 0 0; font-size: 0.82rem; line-height: 1.35; color: var(--muted); }
+.trail-body .trail-meta { margin: 0; font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase; }
+.trail-body .trail-reward { margin-top: 4px; color: #e3b56f; }
+.trail-stop.cleared .trail-reward { color: var(--moss); }
+.trail-stop .btn { width: auto; padding: 8px 16px; font-size: 0.95rem; }
+@media (max-width: 440px) {
+  .trail-stop { grid-template-columns: 52px 1fr; }
+  .trail-face { width: 52px; }
+  .trail-stop .btn { grid-column: 1 / -1; }
+}
+
+/* ---------- Trophies ---------- */
+
+.trophies { text-align: left; }
+.trophies h2 { margin: 0; font-size: 1.8rem; color: #cdd6bb; }
+.trophy-list { display: grid; gap: 8px; max-height: 60vh; margin: 12px 0; padding: 0; overflow: auto; list-style: none; }
+.trophy {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.25);
+  opacity: 0.55;
+}
+.trophy.done { border-color: #3f553d; opacity: 1; }
+.trophy strong { font-family: var(--font-display); font-size: 1.05rem; font-weight: 400; }
+.trophy.done strong::before { content: "✓ "; color: var(--moss); }
+.trophy-text { grid-column: 1; font-size: 0.82rem; color: var(--muted); }
+.trophy-amber { grid-row: 1 / span 2; grid-column: 2; align-self: center; font-size: 0.85rem; color: #e3b56f; }
+
+/* ---------- Campaign: levels and upgrades ---------- */
+
+.level-badge {
+  position: absolute;
+  z-index: 4;
+  right: 8cqw;
+  top: 8cqw;
+  padding: 1.2cqw 2.6cqw;
+  border-radius: 2cqw;
+  background: rgba(0, 0, 0, 0.8);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12);
+  font-family: var(--font-numbers);
+  font-size: 9.5cqw;
+  font-weight: 700;
+  line-height: 1;
+  color: #e6dcc0;
+  pointer-events: none;
+}
+
+.deck-modes { margin-bottom: -4px; }
+.points-badge { font-size: 0.72rem; color: #e3b56f; }
+.campaign-panel .btn { max-width: none; margin-top: 10px; }
+
+.upgrade {
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.3);
+  text-align: left;
+}
+.upgrade[hidden] { display: none; }
+.upgrade-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin: 0; }
+.upgrade-level { font-family: var(--font-display); font-size: 1.2rem; }
+.upgrade-points { font-size: 0.9rem; color: #e3b56f; }
+.xp-bar {
+  height: 6px;
+  margin: 6px 0 4px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: #0a0d09;
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.xp-bar span { display: block; height: 100%; background: linear-gradient(90deg, #3e6a40, var(--moss)); }
+.upgrade-xp { margin: 0; font-size: 0.78rem; color: var(--muted); }
+.upgrade-buttons { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-top: 10px; }
+.upgrade-buttons .btn { padding: 6px 2px; font-size: 0.85rem; }
+.upgrade-note { margin: 8px 0 0; font-size: 0.75rem; color: var(--muted); }
+.reward-line.xp { font-size: 0.95rem; color: var(--moss); }
+
+/* XP gains after a Trail win: each deck card with a filling bar. */
+#result-dialog:has(.xp-grid) { width: min(96vw, 660px); }
+.xp-gains { display: grid; gap: 4px; }
+.xp-headline { display: flex; align-items: baseline; justify-content: center; gap: 10px; margin: 0; }
+.xp-headline span { font-family: var(--font-display); font-size: 1.05rem; color: var(--muted); }
+.xp-headline strong { font-family: var(--font-numbers); font-size: 2rem; color: var(--moss); }
+.xp-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 22px 12px; margin-top: 14px; }
+.xp-card { position: relative; display: grid; gap: 6px; text-align: center; }
+.xp-card .xp-bar { height: 10px; margin: 0; border-radius: 5px; }
+.xp-card .xp-bar span { width: 0; }
+.xp-level { font-size: 0.95rem; line-height: 1; color: var(--muted); }
+.xp-summary { display: grid; justify-items: center; gap: 8px; margin-top: 14px; font-size: 1rem; color: #e3b56f; }
+.xp-summary[hidden] { display: none; }
+.xp-summary p { margin: 0; }
+.xp-summary .btn { width: auto; padding: 8px 18px; font-size: 1rem; animation: rise 0.4s ease-out; }
+/* A tag pops above each card that levels up. */
+.xp-card.leveled::before {
+  content: "Level up";
+  position: absolute;
+  z-index: 7;
+  top: -12px;
+  left: 50%;
+  padding: 2px 8px;
+  border-radius: 3px;
+  background: var(--moss-dark);
+  box-shadow: 0 0 0 1px var(--moss), 0 3px 8px rgba(0, 0, 0, 0.6);
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  color: #eef3e3;
+  transform: translateX(-50%);
+  animation: tag-pop 0.45s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+.xp-card.filling .xp-bar span {
+  background-image:
+    linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0)),
+    linear-gradient(90deg, #3e6a40, var(--moss));
+  background-size: 40% 100%, 100% 100%;
+  background-repeat: no-repeat;
+  animation: xp-shine 0.9s linear infinite;
+}
+.xp-float {
+  position: absolute;
+  z-index: 6;
+  left: 50%;
+  top: 26%; /* over the card art, clear of its Attack and Defense */
+  font-size: 1.15rem;
+  font-weight: 700;
+  white-space: nowrap;
+  color: #a6dc9a;
+  text-shadow: 0 1px 2px #000, 0 0 3px #000;
+  pointer-events: none;
+  transform: translateX(-50%);
+  animation: xp-float 1.4s ease-out forwards;
+}
+
+/* Upgrade points gained, next to the level: "Lv 3 +1". */
+.xp-up {
+  display: inline-block;
+  font-weight: 700;
+  color: #e3b56f;
+  animation: rise 0.4s ease-out;
+}
+.xp-card.leveled .xp-level { color: var(--moss); }
+.xp-card.leveled .card {
+  box-shadow: 0 0 0 2px var(--moss), 0 6px 16px rgba(0, 0, 0, 0.65);
+  animation: level-pop 0.45s ease-out;
+}
+
+/* ---------- New card reveal ---------- */
+
+.unlock {
+  --rarity-edge: #b39a7c;
+  width: min(94vw, 440px);
+  max-height: 96vh;
+  overflow: hidden auto;
+  padding: 26px 24px 22px;
+  border-color: var(--rarity-edge);
+}
+.unlock::backdrop { background: rgba(2, 4, 2, 0.9); backdrop-filter: blur(4px); }
+.unlock[data-rarity="rare"] { --rarity-edge: #7fc29d; }
+.unlock[data-rarity="epic"] { --rarity-edge: #ad9ad6; }
+.unlock[data-rarity="legendary"] { --rarity-edge: #e0ad5e; }
+
+/* A shaft of light behind the card (the Sunlit field art). */
+.unlock-rays {
+  position: absolute;
+  inset: -10% -25% 20%;
+  background: url("../art/field/sunlit.webp") center / cover no-repeat;
+  mix-blend-mode: screen;
+  opacity: 0.5;
+  pointer-events: none;
+  animation: rays-in 1.4s ease-out 0.5s backwards;
+}
+.unlock-eyebrow {
+  position: relative;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--rarity-edge);
+}
+.unlock-stage { position: relative; width: min(58vw, 230px); margin: 16px auto 18px; perspective: 1200px; }
+/* Resting state is face up; the animation flips it over from face down. */
+.unlock-flip { position: relative; aspect-ratio: 4 / 5; transform: rotateY(180deg); transform-style: preserve-3d; }
+.unlock-back,
+.unlock-front { position: absolute; inset: 0; backface-visibility: hidden; }
+.unlock-front { transform: rotateY(180deg); }
+.unlock-front .card { position: absolute; inset: 0; box-shadow: 0 0 0 2px var(--rarity-edge), 0 24px 50px rgba(0, 0, 0, 0.75); }
+.unlock-back {
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  background: var(--grain), radial-gradient(ellipse at 50% 45%, #2b3327, #0d110c 70%);
+  background-blend-mode: soft-light, normal;
+  box-shadow: inset 0 0 0 4px #2f382b, inset 0 0 0 7px #0a0d09, 0 20px 40px rgba(0, 0, 0, 0.7);
+  container-type: inline-size;
+}
+.unlock-back::before {
+  content: "\2766\FE0E";
+  font-family: "Segoe UI Symbol", "Noto Sans Symbols 2", serif;
+  font-size: 40cqw;
+  color: #4f6746;
+}
+/* Both hold only their first frame (never their last), so the face-up resting state wins once
+   they finish. The rise is listed last so it takes precedence while the turn waits to start. */
+.unlock.revealing .unlock-flip {
+  animation:
+    unlock-turn 0.75s ease-in-out 0.6s backwards,
+    unlock-rise 0.55s cubic-bezier(0.2, 1.2, 0.4, 1) backwards;
+}
+.unlock-rarity { position: relative; margin: 0; font-family: var(--font-display); font-size: 1.1rem; letter-spacing: 0.08em; color: var(--rarity-edge); }
+.unlock-name { position: relative; margin: 2px 0 10px; font-size: 2.2rem; line-height: 1.05; color: #e6dcc3; text-wrap: balance; }
+.unlock .ability { position: relative; margin: 0 0 10px; }
+.unlock-source { position: relative; margin: 0 0 16px; font-size: 0.9rem; color: var(--muted); }
+.unlock.revealing .unlock-text { animation: fade-up 0.5s ease-out 1.25s backwards; }
+.unlock .actions .btn[hidden] { display: none; }
+
+/* New cards in the Collection: a tag, an amber edge, and a gentle bob until opened. */
+.tile { position: relative; }
+.tile.is-new .tile-face .card {
+  box-shadow: 0 0 0 2px #e3b56f, 0 8px 18px rgba(0, 0, 0, 0.65);
+  animation: new-bob 2.4s ease-in-out infinite;
+}
+.new-badge {
+  position: absolute;
+  z-index: 6;
+  top: -8px;
+  left: 50%;
+  padding: 1px 9px;
+  border-radius: 3px;
+  background: #e3b56f;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #1a1409;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.reward-card.is-new .reward-card-face .card { animation: new-bob 2.4s ease-in-out infinite; }
+
+/* ---------- Motion ---------- */
+
+@keyframes unlock-rise {
+  from { opacity: 0; transform: translateY(70px) scale(0.8) rotateY(0deg); }
+  to { opacity: 1; transform: rotateY(0deg); }
+}
+@keyframes unlock-turn {
+  from { transform: rotateY(0deg); }
+  to { transform: rotateY(180deg); }
+}
+@keyframes rays-in { from { opacity: 0; } }
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes new-bob { 50% { transform: translateY(-4px); } }
+@keyframes tag-pop {
+  from { opacity: 0; transform: translateX(-50%) scale(0.5); }
+  to { opacity: 1; transform: translateX(-50%) scale(1); }
+}
+
+@keyframes sway { 50% { transform: rotate(-4deg); } }
+@keyframes pulse { 50% { border-color: rgba(127, 176, 105, 0.95); } }
+@keyframes place {
+  from { transform: scale(1.2) translateY(-8px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+@keyframes xp-shine {
+  from { background-position: -40% 0, 0 0; }
+  to { background-position: 140% 0, 0 0; }
+}
+@keyframes xp-float {
+  0% { opacity: 0; transform: translate(-50%, 6px); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -24px); }
+}
+@keyframes sunbeam {
+  from { opacity: 0.55; }
+  to { opacity: 0.95; }
+}
+@keyframes undergrowth { to { transform: skewX(2.5deg); } }
+@keyframes heat { to { opacity: 0.45; } }
+@keyframes ember {
+  0% { opacity: 0; transform: translate(0, 0) scale(1); }
+  12% { opacity: 0.9; }
+  70% { opacity: 0.6; }
+  100% { opacity: 0; transform: translate(var(--drift), -100cqh) scale(0.4); }
+}
+@keyframes waves { to { background-position-x: 120px; } }
+@keyframes dust {
+  0% { opacity: 0; transform: translate(0, 0) rotate(0deg); }
+  15% { opacity: 0.7; }
+  100% { opacity: 0; transform: translate(var(--drift), 100cqh) rotate(200deg); }
+}
+@keyframes fog { to { transform: translate(12%, -6%); } }
+@keyframes thorn-pulse {
+  50% { box-shadow: inset 0 0 0 3px rgba(175, 55, 35, 0.8), inset 0 0 34px rgba(140, 40, 25, 0.45); }
+}
+@keyframes claw { to { clip-path: inset(0 0 0 0); } }
+@keyframes strike-rake {
+  0% { transform: scaleX(0.04); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: scaleX(1); opacity: 0.95; }
+}
+@keyframes strike-turned {
+  0% { transform: scaleX(0.04); opacity: 0; }
+  20% { opacity: 1; }
+  68% { transform: scaleX(0.8); }
+  100% { transform: scaleX(0.62); opacity: 0.75; }
+}
+@keyframes impact-burst {
+  0% { opacity: 0; transform: scale(0.28); }
+  22% { opacity: 1; }
+  100% { opacity: 0; transform: scale(1.05); }
+}
+@keyframes guard-raise {
+  0% { opacity: 0; transform: scale(1.35); }
+  30% { opacity: 1; transform: scale(1); }
+  46% { transform: scale(1.07); } /* the shove, as the blow breaks on it */
+  62% { transform: scale(1.01); }
+  100% { opacity: 0; transform: scale(1.03); }
+}
+@keyframes hold {
+  30% { transform: translate(2px, -1px) rotate(1.1deg); }
+  62% { transform: translate(-1.5px, 1px) rotate(-0.8deg); }
+  100% { transform: none; }
+}
+@keyframes fade-out { to { opacity: 0; } }
+@keyframes vine-grow { to { stroke-dashoffset: 0; } }
+@keyframes leaf-in {
+  from { opacity: 0; transform: scale(0); }
+  to { opacity: 0.95; transform: scale(1); }
+}
+@keyframes leaf-sway { to { transform: rotate(14deg); } }
+@keyframes level-pop {
+  45% { transform: scale(1.12); }
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes threat {
+  50% { transform: translateY(-3px) rotate(-1.5deg); filter: brightness(1.2); }
+}
+@keyframes toast-in {
+  from { opacity: 0; transform: translate(-50%, 12px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+@keyframes draw {
+  from { transform: translateY(18px) scale(0.9); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+@keyframes flip {
+  from { transform: rotateY(90deg); }
+  to { transform: rotateY(0deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

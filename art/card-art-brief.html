@@ -1,0 +1,436 @@
+<title>Vinebound Card Art Brief</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=IM+Fell+English:ital@1&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --ground: #f2f4ee;
+    --surface: #e7ebe2;
+    --ink: #1b241b;
+    --muted: #5b6858;
+    --rule: #cdd5c7;
+    --accent: #3e6a40;
+    --green: #5f8c41;
+    --red: #a94c33;
+    --blue: #3f729a;
+    --mark-common: #8c7358;
+    --mark-rare: #7f9187;
+    --mark-epic: #7c64a8;
+    --mark-legendary: #b07a2a;
+    --tablet: #cfc9b4;
+    --diagram-card: #dfe5d8;
+    --diagram-frame: #93a38b;
+    --display: "IM Fell English SC", "IM Fell English", Georgia, serif;
+    --body: "Alegreya Sans", "Segoe UI", system-ui, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0d130d;
+      --surface: #141c14;
+      --ink: #dfe5d2;
+      --muted: #8d9c86;
+      --rule: #273527;
+      --accent: #7fb069;
+      --green: #7da65c;
+      --red: #cf6c4e;
+      --blue: #6a9cc2;
+      --mark-common: #b39a7c;
+      --mark-rare: #c9d3cc;
+      --mark-epic: #ad9ad6;
+      --mark-legendary: #e0ad5e;
+      --tablet: #6e6a5c;
+      --diagram-card: #1b251b;
+      --diagram-frame: #4f6a47;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0d130d;
+    --surface: #141c14;
+    --ink: #dfe5d2;
+    --muted: #8d9c86;
+    --rule: #273527;
+    --accent: #7fb069;
+    --green: #7da65c;
+    --red: #cf6c4e;
+    --blue: #6a9cc2;
+    --mark-common: #b39a7c;
+    --mark-rare: #c9d3cc;
+    --mark-epic: #ad9ad6;
+    --mark-legendary: #e0ad5e;
+    --tablet: #6e6a5c;
+    --diagram-card: #1b251b;
+    --diagram-frame: #4f6a47;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding-inline: 20px;
+    padding-block: 0 72px;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 17px;
+    line-height: 1.55;
+  }
+  .doc { max-width: 900px; margin: 0 auto; }
+
+  h1, h2, h3 { font-family: var(--display); font-weight: 400; text-wrap: balance; margin: 0; }
+  p { margin: 0; }
+  code, .mono { font-family: var(--mono); font-size: 0.86em; }
+
+  /* ---------- Header ---------- */
+  .masthead {
+    display: grid;
+    gap: 18px;
+    padding-block: 56px 32px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  h1 { font-size: clamp(2.4rem, 7vw, 3.6rem); line-height: 1.02; letter-spacing: 0.01em; }
+  .lede { max-width: 62ch; font-size: 1.12rem; color: var(--ink); }
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1px;
+    margin-top: 8px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+  }
+  .fact { display: grid; gap: 2px; padding: 12px 14px; background: var(--ground); }
+  .fact dt { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); }
+  .fact dd { margin: 0; font-size: 1.05rem; font-weight: 500; font-variant-numeric: tabular-nums; }
+
+  /* ---------- Sections ---------- */
+  section { display: grid; gap: 18px; padding-block: 40px; border-bottom: 1px solid var(--rule); }
+  h2 { font-size: 1.9rem; line-height: 1.1; }
+  .section-intro { max-width: 64ch; color: var(--muted); }
+
+  .spec-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 32px; align-items: start; }
+  .spec-list { display: grid; gap: 0; margin: 0; border-top: 1px solid var(--rule); }
+  .spec-list div { display: grid; grid-template-columns: 9.5rem 1fr; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--rule); }
+  .spec-list dt { font-family: var(--mono); font-size: 0.8rem; color: var(--muted); padding-top: 2px; }
+  .spec-list dd { margin: 0; }
+
+  figure { margin: 0; display: grid; gap: 8px; }
+  .diagram { width: 100%; height: auto; max-width: 100%; display: block; }
+  figcaption { font-size: 0.88rem; color: var(--muted); }
+
+  /* Diagram colors come from the theme tokens (SVG attributes can't read CSS variables). */
+  .d-card { fill: var(--diagram-card); }
+  .d-frame { fill: none; stroke: var(--diagram-frame); stroke-width: 14; }
+  .d-zone { fill: none; stroke: var(--accent); stroke-width: 2; stroke-dasharray: 7 6; }
+  .d-zone-title { fill: var(--accent); font-family: var(--display); font-size: 26px; }
+  .d-zone-note { fill: var(--accent); font-family: var(--mono); font-size: 13px; }
+  .d-tablet { fill: var(--tablet); }
+  .d-num { fill: var(--ink); font-family: Georgia, serif; font-size: 40px; font-weight: 700; }
+  .d-notch { fill: var(--mark-legendary); }
+  .d-badge { fill: var(--ink); opacity: 0.8; }
+  .d-badge-text { fill: var(--ground); font-family: Georgia, serif; font-size: 15px; font-weight: 700; }
+  .d-callouts text { fill: var(--ink); font-family: var(--body); font-size: 16px; }
+  .d-callouts .d-sub { fill: var(--muted); font-size: 14px; }
+  .d-callouts line, .d-callouts polyline { fill: none; stroke: var(--muted); stroke-width: 1; }
+
+  .direction { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; }
+  .direction h3 { font-size: 1.25rem; margin-bottom: 8px; }
+  .direction ul { margin: 0; padding-left: 1.1em; display: grid; gap: 6px; }
+  .direction li::marker { color: var(--accent); }
+  .avoid li::marker { color: var(--red); }
+
+  .swatches { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .swatch { display: grid; gap: 8px; }
+  .swatch-chip { height: 56px; border-radius: 3px; }
+  .swatch strong { font-family: var(--display); font-weight: 400; font-size: 1.2rem; }
+  .swatch p { font-size: 0.92rem; color: var(--muted); }
+  .chip-green { background: linear-gradient(135deg, #7da65c, #0c1c0b); }
+  .chip-red { background: linear-gradient(135deg, #c26a4c, #220a06); }
+  .chip-blue { background: linear-gradient(135deg, #6194b8, #07121f); }
+
+  /* ---------- Roster ---------- */
+  .roster-key { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 0.9rem; color: var(--muted); }
+  .roster-key span { display: inline-flex; align-items: center; gap: 8px; }
+
+  .group { display: grid; gap: 14px; padding-top: 12px; }
+  .group-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .group-head h3 { font-size: 1.55rem; }
+  .group-head .count { font-family: var(--mono); font-size: 0.8rem; color: var(--muted); }
+  .group-head .dot { width: 14px; height: 14px; border-radius: 2px; align-self: center; }
+  .group[data-color="green"] .dot { background: var(--green); }
+  .group[data-color="red"] .dot { background: var(--red); }
+  .group[data-color="blue"] .dot { background: var(--blue); }
+
+  .entries { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 32px; border-top: 1px solid var(--rule); }
+  .entry { display: grid; gap: 5px; align-content: start; padding: 14px 0 16px; border-bottom: 1px solid var(--rule); break-inside: avoid; }
+  .entry-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .entry h4 { margin: 0; font-family: var(--body); font-weight: 700; font-size: 1.05rem; }
+  .file { color: var(--accent); }
+  .subject { font-size: 0.97rem; }
+  .flavor { font-family: "IM Fell English", Georgia, serif; font-style: italic; font-size: 0.93rem; color: var(--muted); }
+  .tag {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    padding: 0 5px;
+    white-space: nowrap;
+  }
+
+  /* Rarity drawn the way the game draws it: 1 to 4 carved notches. */
+  .rarity { display: inline-flex; align-items: center; gap: 7px; font-size: 0.78rem; color: var(--muted); white-space: nowrap; }
+  .notches { display: inline-flex; gap: 2px; }
+  .notches i { display: block; width: 3px; height: 10px; border-radius: 1px; background: currentColor; }
+  .r-common .notches { color: var(--mark-common); }
+  .r-rare .notches { color: var(--mark-rare); }
+  .r-epic .notches { color: var(--mark-epic); }
+  .r-legendary .notches { color: var(--mark-legendary); }
+
+  .checklist { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; max-width: 70ch; }
+  .checklist li { display: grid; grid-template-columns: 22px 1fr; gap: 10px; }
+  .checklist li::before { content: ""; width: 14px; height: 14px; margin-top: 5px; border: 1.5px solid var(--muted); border-radius: 2px; }
+
+  .footer-note { padding-block: 28px 0; font-size: 0.88rem; color: var(--muted); }
+
+  @media (max-width: 760px) {
+    .spec-grid, .direction, .entries { grid-template-columns: 1fr; }
+    .swatches { grid-template-columns: 1fr; }
+    .spec-list div { grid-template-columns: 7.5rem 1fr; }
+  }
+
+  @media print {
+    :root { --ground: #fff; --surface: #f3f3f0; }
+    body { padding-inline: 0; font-size: 11pt; }
+    section { padding-block: 22px; }
+    .group { break-before: auto; }
+    .entry { break-inside: avoid; }
+  }
+</style>
+
+<main class="doc">
+  <header class="masthead">
+    <p class="eyebrow">Art commission brief · Vinebound</p>
+    <h1>Card Art Brief</h1>
+    <p class="lede">Vinebound is a browser card game of duels in a forgotten, dangerous jungle. Players place cards on a 3×3 board and capture each other's cards by comparing the numbers on touching edges. We need one painting for each of the 40 cards, plus a card back. The game draws every frame, number, and label itself, so each image is the painting alone.</p>
+    <dl class="facts">
+      <div class="fact"><dt>Paintings</dt><dd>40 cards + 1 back</dd></div>
+      <div class="fact"><dt>Canvas</dt><dd>800 × 1000 px, 4:5</dd></div>
+      <div class="fact"><dt>Delivery format</dt><dd>WebP, under 150 KB</dd></div>
+      <div class="fact"><dt>Masters</dt><dd>PNG, 1600 × 2000 px</dd></div>
+    </dl>
+  </header>
+
+  <section aria-labelledby="spec-title">
+    <h2 id="spec-title">Canvas and safe areas</h2>
+    <p class="section-intro">Every card is drawn at many sizes: about 60 px wide in a hand, up to 230 px on the board, and 220 px in a detail view. Paint for the small size first. The silhouette of the subject has to read at a glance.</p>
+    <div class="spec-grid">
+      <dl class="spec-list">
+        <div><dt>Aspect</dt><dd>4:5 portrait. The game crops nothing, but it scales to fit.</dd></div>
+        <div><dt>Size</dt><dd>Deliver at 800 × 1000 px. Keep a 1600 × 2000 px PNG master of each.</dd></div>
+        <div><dt>File name</dt><dd>The card's id, lowercase with hyphens: <code class="file">temple-guardian.webp</code>. Ids are listed in the roster below.</dd></div>
+        <div><dt>Edges</dt><dd>A carved frame covers about 3.5% on every side. Let the painting run under it (full bleed); don't paint a border.</dd></div>
+        <div><dt>Number tablets</dt><dd>Four square tablets, each about a quarter of the card's width, sit on the middle of each edge. Keep faces, eyes, and key details out of those four zones.</dd></div>
+        <div><dt>Corners</dt><dd>The top-left corner shows rarity notches; the bottom-left can show a level badge. Keep both quiet.</dd></div>
+        <div><dt>Focal point</dt><dd>One subject, centered, filling roughly the middle 60% of the card.</dd></div>
+      </dl>
+      <figure>
+        <svg class="diagram" viewBox="0 0 680 540" role="img" aria-labelledby="diagram-title">
+          <title id="diagram-title">Card layout: the frame, four edge number tablets, corner marks, and the central area for the subject</title>
+          <!-- Card, 400 x 500 at x=20 y=20 -->
+          <rect class="d-card" x="20" y="20" width="400" height="500" rx="10"/>
+          <rect class="d-frame" x="27" y="27" width="386" height="486" rx="7"/>
+          <!-- Subject zone -->
+          <rect class="d-zone" x="100" y="120" width="240" height="300" rx="6"/>
+          <text class="d-zone-title" x="220" y="262" text-anchor="middle">Subject</text>
+          <text class="d-zone-note" x="220" y="288" text-anchor="middle">centered, ~60%</text>
+          <!-- Tablets: 96 px squares, 16 px in from each edge -->
+          <rect class="d-tablet" x="172" y="36" width="96" height="96" rx="24"/>
+          <rect class="d-tablet" x="172" y="408" width="96" height="96" rx="24"/>
+          <rect class="d-tablet" x="36" y="222" width="96" height="96" rx="24"/>
+          <rect class="d-tablet" x="308" y="222" width="96" height="96" rx="24"/>
+          <text class="d-num" x="220" y="98" text-anchor="middle">7</text>
+          <text class="d-num" x="220" y="470" text-anchor="middle">5</text>
+          <text class="d-num" x="84" y="284" text-anchor="middle">4</text>
+          <text class="d-num" x="356" y="284" text-anchor="middle">A</text>
+          <!-- Corner marks -->
+          <rect class="d-notch" x="46" y="44" width="8" height="26" rx="2"/>
+          <rect class="d-notch" x="59" y="44" width="8" height="26" rx="2"/>
+          <rect class="d-badge" x="44" y="476" width="62" height="28" rx="6"/>
+          <text class="d-badge-text" x="75" y="495" text-anchor="middle">Lv 3</text>
+          <!-- Callouts -->
+          <g class="d-callouts">
+            <line x1="268" y1="84" x2="446" y2="84"/>
+            <text x="454" y="80">Number tablet</text>
+            <text class="d-sub" x="454" y="100">keep clear, all 4 edges</text>
+
+            <line x1="413" y1="170" x2="446" y2="170"/>
+            <text x="454" y="166">Carved frame</text>
+            <text class="d-sub" x="454" y="186">≈3.5%, paint under it</text>
+
+            <line x1="340" y1="380" x2="446" y2="380"/>
+            <text x="454" y="376">Subject area</text>
+            <text class="d-sub" x="454" y="396">faces and eyes here</text>
+
+            <line x1="106" y1="490" x2="446" y2="490"/>
+            <text x="454" y="486">Level badge</text>
+            <text class="d-sub" x="454" y="506">campaign cards only</text>
+
+            <polyline points="67,57 100,57 100,8 446,8"/>
+            <text x="454" y="14">Rarity notches</text>
+            <text class="d-sub" x="454" y="34">1 to 4, top-left</text>
+          </g>
+        </svg>
+        <figcaption>Drawn to scale on a 400 × 500 card. Everything in grey is drawn by the game on top of your painting.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section aria-labelledby="style-title">
+    <h2 id="style-title">Style direction</h2>
+    <p class="section-intro">Hyper-realistic 2D dark fantasy painting, in the spirit of the card art in <em>Gwent</em>. The world is a humid, overgrown jungle where old empires rotted into ruins, and everything in it is dangerous. Paint it like it smells of rain, smoke, and something dead nearby.</p>
+    <div class="direction">
+      <div>
+        <h3>Aim for</h3>
+        <ul>
+          <li>Dramatic chiaroscuro: shafts of light through the canopy, fire in darkness, mist catching light.</li>
+          <li>Muted earthy greens, browns, and stone greys, with one strong accent color per card (see below).</li>
+          <li>Painterly, textured surfaces: wet leaves, cracked stone, rusted metal, scarred skin.</li>
+          <li>Believable anatomy and weight. Creatures feel like they could kill you.</li>
+          <li>A clear silhouette that reads at 60 px wide.</li>
+        </ul>
+      </div>
+      <div class="avoid">
+        <h3>Avoid</h3>
+        <ul>
+          <li>Any text, letters, runes that read as words, numbers, borders, or frames.</li>
+          <li>Cute, chibi, cartoon, or emoji-like simplification.</li>
+          <li>Shiny gold, coins, gems, and slot-machine sparkle. Metal is old and worn.</li>
+          <li>Neon glows and bright fantasy-magic effects. Light comes from the sun, fire, or the moon.</li>
+          <li>Busy backgrounds that compete with the subject; let the jungle fall into shadow.</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3 style="font-size:1.25rem; margin-top:8px">Accent color by card color</h3>
+    <p class="section-intro">Every card belongs to one of three colors, and the game tints the card's frame and background to match. The painting's accent light should agree with it.</p>
+    <div class="swatches">
+      <div class="swatch">
+        <div class="swatch-chip chip-green" role="img" aria-label="Green: moss to deep canopy shadow"></div>
+        <strong>Green</strong>
+        <p>Moss, canopy, rot and root. Deep greens, dappled daylight, murky swamp olive.</p>
+      </div>
+      <div class="swatch">
+        <div class="swatch-chip chip-red" role="img" aria-label="Red: firelight to charred black"></div>
+        <strong>Red</strong>
+        <p>Blood and fire. Firelight orange, embers, dried-blood red, smoke.</p>
+      </div>
+      <div class="swatch">
+        <div class="swatch-chip chip-blue" role="img" aria-label="Blue: river teal to night"></div>
+        <strong>Blue</strong>
+        <p>River and stone. Cold teal water, mist, moonlight on slate and wet ruins.</p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="roster-title">
+    <h2 id="roster-title">Card roster</h2>
+    <p class="section-intro">All 40 cards. Rarity sets the scale of the scene: commons are everyday dangers, rares are notable figures, epics are monsters and warlords, legendaries are ancient or divine. The flavor line is the card's in-game text; use it for mood.</p>
+    <div class="roster-key">
+      <span class="rarity r-common"><span class="notches"><i></i></span>Common (16)</span>
+      <span class="rarity r-rare"><span class="notches"><i></i><i></i></span>Rare (12)</span>
+      <span class="rarity r-epic"><span class="notches"><i></i><i></i><i></i></span>Epic (8)</span>
+      <span class="rarity r-legendary"><span class="notches"><i></i><i></i><i></i><i></i></span>Legendary (4)</span>
+      <span><span class="tag">Starter</span> in every new player's collection, so seen first</span>
+    </div>
+
+    <div class="group" data-color="green">
+      <div class="group-head"><span class="dot" aria-hidden="true"></span><h3>Green</h3><span class="count">13 cards</span></div>
+      <div class="entries">
+        <article class="entry"><div class="entry-head"><h4>Mire Leech</h4><span class="rarity r-common"><span class="notches"><i></i></span>Common</span></div><p><code class="file">mire-leech.webp</code> <span class="tag">Starter</span></p><p class="subject">A giant glistening leech coiled on a mossy root above black swamp water, its round mouth ringed with teeth.</p><p class="flavor">“Patient. Thirsty. Everywhere.”</p></article>
+        <article class="entry"><div class="entry-head"><h4>Vine Thief</h4><span class="rarity r-common"><span class="notches"><i></i></span>Common</span></div><p><code class="file">vine-thief.webp</code> <span class="tag">Starter</span></p><p class="subject">A lean hooded thief swinging on a vine, clutching a stolen trinket, face half hidden by leaves.</p><p class="flavor">“Takes whatever glitters and vanishes into the green.”</p></article>
+        <article class="entry"><div class="entry-head"><h4>Snake Handler</h4><span class="rarity r-common"><span class="notches"><i></i></span>Common</span></div><p><code class="file">snake-handler.webp</code> <span class="tag">Starter</span></p><p class="subject">A scarred old man with a pit viper coiled around his forearm, old bite marks on his skin.</p><p class="flavor">“Bitten eleven times. Either immune or already dead.”</p></article>
+        <article class="entry"><div class="entry-head"><h4>Poison Dart Frog</h4><span class="rarity r-common"><span class="notches"><i></i></span>Common</span></div><p><code class="file">dart-frog.webp</code></p><p class="subject">A tiny, vividly patterned frog on a wet leaf, dewdrops, the jungle blurred dark behind it.</p><p class="flavor">“Bright colors mean stay away.”</p></article>
+        <article class="entry"><div class="entry-head"><h4>Silent Tracker</h4><span class="rarity r-common"><span class="notches"><i></i></span>Common</span></div><p><code class="file">silent-tracker.webp</code></p><p class="subject">A painted hunter crouched in ferns with a blowpipe, only his eyes visible through the leaves.</p><p class="flavor">“You won't hear him coming. That's the point.”</p></article>
+        <article class="entry"><div class="entry-head"><h4>Howler Monkey</h4><span class="rarity r-common"><span class="notches"><i></i></span>Common</span></div><p><code class="file">howler-monkey.webp</code></p><p class="subject">A black howler monkey screaming from a high branch at dusk, mouth wide open.</p><p class="flavor">“Now the whole jungle knows you are here.”</p></article>
+        <article class="entry"><div class="entry-head"><h4>Mud Caiman</h4><span class="rarity r-common"><span class="notches"><i></i></span>Common</span></div><p><code class="file">mud-caiman.webp</code></p><p class="subject">A caiman's eyes and snout just breaking brown water beside a half-sunken log.</p><p class="flavor">“Just a log. Until it isn't.”</p></article>
+        <article class="entry"><div class="entry-head"><h4>Canopy Oracle</h4><span class="rarity r-rare"><span class="notches"><i></i><i></i></span>Rare</span></div><p><code class="file">canopy-oracle.webp</code></p><p class="subject">An old woman in a woven hammock high in the canopy, milky eyes, strings of bones and feathers around her.</p><p class="flavor">“She hangs in the treetops and sees everything below.”</p></article>
+        <article class="entry"><div class="entry-head"><h4>Swamp Witch</h4><span class="rarity r-rare"><span class="notches"><i></i><i></i></span>Rare</span></div><p><code class="file">swamp-witch.webp</code></p><p class="subject">A witch waist-deep in a fog-covered swamp, a necklace of teeth, a candle burning inside a skull.</p><p class="flavor">“Ask her for anything. She will ask for something back.”</p></article>
+        <article class="entry"><div class="entry-head"><h4>Strangler Fig</h4><span class="rarity r-rare"><span class="notches"><i></i><i></i></span>Rare</span></div><p><code class="file">strangler-fig.webp</code></p><p class="subject">Strangler fig roots crushing a dead tree whose bark has twisted into a screaming face.</p><p class="flavor">“It grows around a tree for a century, until only the fig remains.”</p></article>
+        <article class="entry"><div class="entry-head"><h4>Were-Jaguar</h4><span class="rarity r-epic"><span class="notches"><i></i><i></i><i></i></span>Epic</span></div><p><code class="file">were-jaguar.webp</code></p><p class="subject">A village elder mid-transformation into a jaguar under a full moon, his robes tearing.</p><p class="flavor">“By day, a village elder. Under the full moon, the reason for the curfew.”</p></article>
+        <article class="entry"><div class="entry-head"><h4>Blood Orchid</h4><span class="rarity r-epic"><span class="notches"><i></i><i></i><i></i></span>Epic</span></div><p><code class="file">blood-orchid.webp</code></p><p class="subject">A huge crimson orchid blooming out of a skeleton's ribcage, pollen drifting in a shaft of light.</p><p class="flavor">“It blooms once a century, and it blooms red.”</p></article>
+        <article class="entry"><div class="entry-head"><h4>The Jaguar King</h4><span class="rarity r-legendary"><span class="notches"><i></i><i></i><i></i><i></i></span>Legendary</span></div><p><code class="file">jaguar-king.webp</code></p><p class="subject">A massive scarred black jaguar on a moss-covered ruined stone throne, wearing a crown of bone.</p><p class="flavor">“Every creature in the jungle bows to him, or is eaten.”</p></article>
+      </div>
+    </div>
+
+    <div class="group" data-color="red">
+      <div class="group-head"><span class="dot" aria-hidden="true"></span><h3>Red</h3><span class="count">13 cards</span></div>
+      <div class="entries">
+        <article class="entry"><div class="entry-head"><h4>Firefly Guide</h4><span class="rarity r-common"><span class="notches"><i></i></span>Common</span></div><p><code class="file">firefly-guide.webp</code> <span class="tag">Starter</span></p><p class="subject">A small hooded figure holding a lantern swarming with fireflies, leading the way deeper into dark trees.</p><p class="flavor">“Follow the lights. They do know the way, just not to anywhere you want to go.”</p></article>
+        <article class="entry"><div class="entry-head"><h4>Ash Shaman</h4><span class="rarity r-common"><span class="notches"><i></i></span>Common</span></div><p><code class="file">ash-shaman.webp</code> <span class="tag">Starter</span></p><p class="subject">A shaman with an ash-painted face reading shapes in the smoke of burning leaves.</p><p class="flavor">“Reads the future in the smoke of burning leaves.”</p></article>
+        <article class="entry"><div class="entry-head"><h4>Carrion Vulture</h4><span class="rarity r-common"><span class="notches"><i></i></span>Common</span></div><p><code class="file">carrion-vulture.webp</code> <span class="tag">Starter</span></p><p class="subject">A ragged vulture on a dead branch, wings half spread, a smoky orange haze behind it.</p><p class="flavor">“It starts circling long before anything dies.”</p></article>
+        <article class="entry"><div class="entry-head"><h4>Machete Bandit</h4><span class="rarity r-common"><span class="notches"><i></i></span>Common</span></div><p><code class="file">machete-bandit.webp</code></p><p class="subject">A bandit stepping out of hacked undergrowth with a notched, bloodied machete.</p><p class="flavor">“Clears a path through the jungle, and through travelers.”</p></article>
+        <article class="entry"><div class="entry-head"><h4>Blind Jaguar</h4><span class="rarity r-rare"><span class="notches"><i></i><i></i></span>Rare</span></div><p><code class="file">blind-jaguar.webp</code> <span class="tag">Starter</span></p><p class="subject">A jaguar with pale, clouded eyes stalking low, nose raised to the air.</p><p class="flavor">“Hunts by scent, by sound, and by the fear in your breath.”</p></article>
+        <article class="entry"><div class="entry-head"><h4>Venom Brewer</h4><span class="rarity r-rare"><span class="notches"><i></i><i></i></span>Rare</span></div><p><code class="file">venom-brewer.webp</code></p><p class="subject">A masked alchemist grinding frog skins, bubbling vials lit by a small fire.</p><p class="flavor">“Every cure has a price. Most have a side effect.”</p></article>
+        <article class="entry"><div class="entry-head"><h4>Bone Drummer</h4><span class="rarity r-rare"><span class="notches"><i></i><i></i></span>Rare</span></div><p><code class="file">bone-drummer.webp</code></p><p class="subject">A drummer pounding a hide drum hung with bones, lit from below by a bonfire.</p><p class="flavor">“The beat carries for miles. So do the screams.”</p></article>
+        <article class="entry"><div class="entry-head"><h4>Sun Cultist</h4><span class="rarity r-rare"><span class="notches"><i></i><i></i></span>Rare</span></div><p><code class="file">sun-cultist.webp</code></p><p class="subject">A robed cultist atop a stepped pyramid, raising an obsidian knife toward a blood-red sun.</p><p class="flavor">“Offers hearts to a sun that never answers.”</p></article>
+        <article class="entry"><div class="entry-head"><h4>Headhunter</h4><span class="rarity r-rare"><span class="notches"><i></i><i></i></span>Rare</span></div><p><code class="file">headhunter.webp</code></p><p class="subject">A tattooed warrior with shrunken heads hanging from his belt, gripping a spear.</p><p class="flavor">“He collects trophies. Yours would do nicely.”</p></article>
+        <article class="entry"><div class="entry-head"><h4>Jungle Warlord</h4><span class="rarity r-epic"><span class="notches"><i></i><i></i><i></i></span>Epic</span></div><p><code class="file">jungle-warlord.webp</code></p><p class="subject">A warlord in rusted armor and a jaguar pelt, a village burning behind him.</p><p class="flavor">“He rules every village from here to the river, by fear alone.”</p></article>
+        <article class="entry"><div class="entry-head"><h4>Fire Salamander</h4><span class="rarity r-epic"><span class="notches"><i></i><i></i><i></i></span>Epic</span></div><p><code class="file">fire-salamander.webp</code></p><p class="subject">A large salamander with ember-lit cracks along its skin, coiled on scorched stones.</p><p class="flavor">“Smaller than a dragon. Angrier, too.”</p></article>
+        <article class="entry"><div class="entry-head"><h4>Army Ant Queen</h4><span class="rarity r-epic"><span class="notches"><i></i><i></i><i></i></span>Epic</span></div><p><code class="file">ant-queen.webp</code></p><p class="subject">A swollen army ant queen surrounded by her swarm stripping an animal to the bone.</p><p class="flavor">“Her colony strips a jaguar to the bone in an hour.”</p></article>
+        <article class="entry"><div class="entry-head"><h4>The Sun Priestess</h4><span class="rarity r-legendary"><span class="notches"><i></i><i></i><i></i><i></i></span>Legendary</span></div><p><code class="file">sun-priestess.webp</code></p><p class="subject">A priestess in an ash-stained sun-disc headdress, standing unharmed in a burning temple city.</p><p class="flavor">“She burned the city to keep it from the invaders. She rules the ashes still.”</p></article>
+      </div>
+    </div>
+
+    <div class="group" data-color="blue">
+      <div class="group-head"><span class="dot" aria-hidden="true"></span><h3>Blue</h3><span class="count">14 cards</span></div>
+      <div class="entries">
+        <article class="entry"><div class="entry-head"><h4>Bone Beetle</h4><span class="rarity r-common"><span class="notches"><i></i></span>Common</span></div><p><code class="file">bone-beetle.webp</code> <span class="tag">Starter</span></p><p class="subject">A large beetle picking a human skull clean on mossy temple steps.</p><p class="flavor">“It picks the temple steps clean, one visitor at a time.”</p></article>
+        <article class="entry"><div class="entry-head"><h4>Ruin Digger</h4><span class="rarity r-common"><span class="notches"><i></i></span>Common</span></div><p><code class="file">ruin-digger.webp</code> <span class="tag">Starter</span></p><p class="subject">A haggard treasure hunter with a pickaxe, uncovering bones instead of treasure in a ruin.</p><p class="flavor">“Digs for gold. Finds bones. Keeps digging.”</p></article>
+        <article class="entry"><div class="entry-head"><h4>River Smuggler</h4><span class="rarity r-common"><span class="notches"><i></i></span>Common</span></div><p><code class="file">river-smuggler.webp</code> <span class="tag">Starter</span></p><p class="subject">A smuggler poling a dugout canoe loaded with covered crates through river mist.</p><p class="flavor">“Moves cargo nobody asks about, on water nobody drinks.”</p></article>
+        <article class="entry"><div class="entry-head"><h4>Drowned Explorer</h4><span class="rarity r-common"><span class="notches"><i></i></span>Common</span></div><p><code class="file">drowned-explorer.webp</code> <span class="tag">Starter</span></p><p class="subject">The pale ghost of a colonial-era explorer underwater, clutching a waterlogged map.</p><p class="flavor">“His map ended at the rapids. So did he.”</p></article>
+        <article class="entry"><div class="entry-head"><h4>Mist Wraith</h4><span class="rarity r-common"><span class="notches"><i></i></span>Common</span></div><p><code class="file">mist-wraith.webp</code></p><p class="subject">A wraith made of mist rising from a river at dusk, reaching out with long hands.</p><p class="flavor">“It rises from the river at dusk, looking for the lost.”</p></article>
+        <article class="entry"><div class="entry-head"><h4>Temple Guardian</h4><span class="rarity r-rare"><span class="notches"><i></i><i></i></span>Rare</span></div><p><code class="file">temple-guardian.webp</code> <span class="tag">Starter</span></p><p class="subject">A stone guardian statue waking, moss and rock cracking away from its shoulders.</p><p class="flavor">“Carved from stone. Woken by trespassers.”</p></article>
+        <article class="entry"><div class="entry-head"><h4>Rusted Conquistador</h4><span class="rarity r-rare"><span class="notches"><i></i><i></i></span>Rare</span></div><p><code class="file">rusted-conquistador.webp</code></p><p class="subject">A skeletal conquistador in rusted armor, vines growing through the helmet.</p><p class="flavor">“He came for gold. He stayed forever.”</p></article>
+        <article class="entry"><div class="entry-head"><h4>River Priest</h4><span class="rarity r-rare"><span class="notches"><i></i><i></i></span>Rare</span></div><p><code class="file">river-priest.webp</code></p><p class="subject">A priest pushing a small offering boat out onto a dark river.</p><p class="flavor">“Gives the river one boat a month, to keep the peace.”</p></article>
+        <article class="entry"><div class="entry-head"><h4>Moth Seer</h4><span class="rarity r-rare"><span class="notches"><i></i><i></i></span>Rare</span></div><p><code class="file">moth-seer.webp</code></p><p class="subject">A seer covered in pale moths, eyes closed, face lit by a small fire.</p><p class="flavor">“A thousand wings whisper what the fire will do next.”</p></article>
+        <article class="entry"><div class="entry-head"><h4>Storm Serpent</h4><span class="rarity r-epic"><span class="notches"><i></i><i></i><i></i></span>Epic</span></div><p><code class="file">storm-serpent.webp</code></p><p class="subject">An enormous serpent coiling through a monsoon over a flooded river, lightning behind it.</p><p class="flavor">“Its coils churn the monsoon.”</p></article>
+        <article class="entry"><div class="entry-head"><h4>Goliath Spider</h4><span class="rarity r-epic"><span class="notches"><i></i><i></i><i></i></span>Epic</span></div><p><code class="file">goliath-spider.webp</code></p><p class="subject">A giant spider on its web holding a caught bird, an explorer's hat tangled in the silk.</p><p class="flavor">“Its web catches birds, and the people who come looking for them.”</p></article>
+        <article class="entry"><div class="entry-head"><h4>Idol Wraith</h4><span class="rarity r-epic"><span class="notches"><i></i><i></i><i></i></span>Epic</span></div><p><code class="file">idol-wraith.webp</code></p><p class="subject">A spectral figure clutching a stone idol inside a collapsing, trap-filled temple chamber.</p><p class="flavor">“Touch the golden idol. Just once.”</p></article>
+        <article class="entry"><div class="entry-head"><h4>The River Titan</h4><span class="rarity r-legendary"><span class="notches"><i></i><i></i><i></i><i></i></span>Legendary</span></div><p><code class="file">river-titan.webp</code></p><p class="subject">A colossal ancient creature rising from a river, trees and ruins growing on its back.</p><p class="flavor">“Older than the river. The river is afraid of it.”</p></article>
+        <article class="entry"><div class="entry-head"><h4>The Sleeping God</h4><span class="rarity r-legendary"><span class="notches"><i></i><i></i><i></i><i></i></span>Legendary</span></div><p><code class="file">sleeping-god.webp</code></p><p class="subject">A vast stone-faced deity asleep inside a temple, bound in chains, lit by cold light.</p><p class="flavor">“The temple was built to keep it asleep.”</p></article>
+      </div>
+    </div>
+
+    <div class="group" data-color="back">
+      <div class="group-head"><h3>Card back</h3><span class="count">1 image</span></div>
+      <div class="entries">
+        <article class="entry"><div class="entry-head"><h4>Card back</h4></div><p><code class="file">card-back.webp</code></p><p class="subject">The face-down side of the opponent's cards. A dark carved wood or stone surface with a single vine emblem at the center. Symmetrical, low contrast, and the same for all cards.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="checklist-title">
+    <h2 id="checklist-title">Before delivering</h2>
+    <ul class="checklist">
+      <li>Each file is named with the card id, lowercase with hyphens, for example <code class="file">mire-leech.webp</code>.</li>
+      <li>800 × 1000 px WebP under 150 KB, plus a 1600 × 2000 px PNG master.</li>
+      <li>No text, numbers, borders, or frames anywhere in the image.</li>
+      <li>The middle of each edge is free of faces, eyes, and important detail.</li>
+      <li>The subject reads clearly when the image is shrunk to 60 px wide.</li>
+      <li>The accent light matches the card's color: Green, Red, or Blue.</li>
+    </ul>
+  </section>
+
+  <p class="footer-note">Vinebound card art brief · 40 cards and 1 card back · Card names, colors, rarities, and flavor text match the game as of September 2026.</p>
+</main>

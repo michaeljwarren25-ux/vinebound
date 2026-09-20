@@ -1,0 +1,12 @@
+{
+  "name": "vinebound",
+  "version": "0.3.0",
+  "private": true,
+  "description": "Card duels in a forgotten jungle. A grid-capture card game for the browser.",
+  "type": "module",
+  "scripts": {
+    "start": "node scripts/serve.js",
+    "test": "node --test",
+    "art": "node scripts/build-art-manifest.js"
+  }
+}

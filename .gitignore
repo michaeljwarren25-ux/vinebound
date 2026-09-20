@@ -1,0 +1,14 @@
+node_modules/
+.DS_Store
+Thumbs.db
+*.log
+# Full-size art masters and the zips they arrived in; the game only ships art/cards/*.webp.
+art/source/
+art/cards/*.zip
+
+# Audio masters, if any arrive as zips or uncompressed sources.
+audio/source/
+
+# Asset zips; the game ships the extracted files.
+art/rites/*.zip
+audio/cards/*.zip
