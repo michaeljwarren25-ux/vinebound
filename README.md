@@ -101,4 +101,21 @@ No dependencies and no build step. It's plain HTML, CSS, and ES modules. Open it
 
 ## Deploying
 
-It's a static site. Upload the folder to GitHub Pages, Netlify, Cloudflare Pages, or Vercel for free hosting.
+Live at **https://michaeljwarren25-ux.github.io/vinebound/**, served straight from `main` by GitHub
+Pages. There's no build step, so every push to `main` redeploys in about 30 seconds.
+
+It's a plain static site, so Netlify, Cloudflare Pages or Vercel would work the same way. Every path
+in the source is relative, which is what lets it live under a `/vinebound/` subpath.
+
+## Testing on a phone
+
+Two ways in, and they're useful for different things:
+
+- **The Pages URL** above. Works on mobile data, survives the PC being off, and is the link to share.
+  Shows whatever was last pushed.
+- **The dev server over wifi**: run `npm start`, then open `http://<your-lan-ip>:5173` on the phone.
+  `scripts/serve.js` binds every interface already, so this needs only a firewall rule allowing
+  inbound TCP 5173. This one picks up uncommitted local edits, which is what you want mid-change.
+
+Progress lives in `localStorage`, so it's per-device *and* per-origin: the phone starts with an empty
+collection, and the LAN and Pages URLs keep separate saves. That's expected, not a bug.
